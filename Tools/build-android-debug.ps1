@@ -18,6 +18,13 @@ $apk = Join-Path $ProjectRoot $Output
 $log = Join-Path $ProjectRoot 'Builds\build-android-debug.log'
 New-Item -ItemType Directory -Force -Path (Split-Path $apk) | Out-Null
 
+# 1ª execução: configura o projeto. A troca de Input System só vale depois de reiniciar o Unity,
+# então a build é uma 2ª execução separada.
+$setupLog = Join-Path $ProjectRoot 'Builds\setup-project.log'
+$code = Invoke-Unity @('-batchmode', '-quit', '-nographics', '-projectPath', $ProjectRoot,
+    '-buildTarget', 'Android', '-executeMethod', 'Game.Editor.ProjectSetup.ApplyFromCommandLine', '-logFile', $setupLog)
+if ($code -ne 0) { Write-Host "CONFIGURAÇÃO FALHOU (código $code). Log: $setupLog" -ForegroundColor Red; exit 1 }
+
 $code = Invoke-Unity @('-batchmode', '-quit', '-nographics', '-projectPath', $ProjectRoot,
     '-buildTarget', 'Android', '-executeMethod', 'Game.Editor.BuildAndroid.BuildDebugApk',
     '-outputPath', $apk, '-logFile', $log)

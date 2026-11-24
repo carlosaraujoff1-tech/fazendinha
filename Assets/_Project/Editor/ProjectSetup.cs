@@ -26,6 +26,9 @@ namespace Game.Editor
         public const string UrpAssetPath = SettingsDir + "/URP-Mobile.asset";
         public const string UrpRendererPath = SettingsDir + "/URP-Mobile_Renderer.asset";
 
+        /// <summary>True se esta sessão do editor mudou o Input System (build só depois de reiniciar).</summary>
+        public static bool InputHandlerChangedThisSession { get; private set; }
+
         [MenuItem("Fazenda/Configurar projeto (Etapa 0)")]
         public static void Apply()
         {
@@ -38,10 +41,22 @@ namespace Game.Editor
         }
 
         /// <summary>Entrada para -executeMethod; sai com código 1 em caso de erro.</summary>
+        /// <remarks>
+        /// Precisa rodar numa execução do Unity SEPARADA da build: trocar o Input System só vale depois de
+        /// reiniciar o editor ("script class layout is incompatible" se buildar na mesma sessão).
+        /// </remarks>
         public static void ApplyFromCommandLine()
         {
             try
             {
+                // GameCI (unity-builder) lista a pasta de saída depois de rodar o método: garante que ela exista.
+                string customPath = BuildAndroid.GetArg("-customBuildPath");
+                if (!string.IsNullOrEmpty(customPath))
+                {
+                    string dir = Path.HasExtension(customPath) ? Path.GetDirectoryName(customPath) : customPath;
+                    Directory.CreateDirectory(dir);
+                    File.WriteAllText(Path.Combine(dir, "setup-only.txt"), "Passada de configuração (sem build).");
+                }
                 Apply();
                 EditorApplication.Exit(0);
             }
@@ -93,6 +108,7 @@ namespace Game.Editor
                 var prop = so.FindProperty("activeInputHandler");
                 if (prop != null && prop.intValue != 1)
                 {
+                    InputHandlerChangedThisSession = true;
                     prop.intValue = 1;
                     so.ApplyModifiedPropertiesWithoutUndo();
                     Debug.Log("[ProjectSetup] Input System novo ativado (requer reiniciar o editor).");
@@ -124,8 +140,8 @@ namespace Game.Editor
             Set(so, "m_MSAA", 2);
             Set(so, "m_RenderScale", 1f);
             Set(so, "m_UseSRPBatcher", true);
-            Set(so, "m_SupportsCameraDepthTexture", false);
-            Set(so, "m_SupportsCameraOpaqueTexture", false);
+            Set(so, "m_RequireDepthTexture", false);
+            Set(so, "m_RequireOpaqueTexture", false);
             Set(so, "m_MainLightShadowsSupported", true);
             Set(so, "m_MainLightShadowmapResolution", 1024);
             Set(so, "m_ShadowDistance", 30f);

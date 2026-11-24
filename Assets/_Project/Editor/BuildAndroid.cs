@@ -23,7 +23,8 @@ namespace Game.Editor
             int code = 1;
             try
             {
-                code = BuildDebugApkTo(GetArg("-outputPath") ?? DefaultDebugApk) ? 0 : 1;
+                // -outputPath (Tools/*.ps1) ou -customBuildPath (GameCI na nuvem).
+                code = BuildDebugApkTo(GetArg("-outputPath") ?? GetArg("-customBuildPath") ?? DefaultDebugApk) ? 0 : 1;
             }
             catch (Exception e)
             {
@@ -35,6 +36,12 @@ namespace Game.Editor
         private static bool BuildDebugApkTo(string outputPath)
         {
             ProjectSetup.Apply();
+            if (ProjectSetup.InputHandlerChangedThisSession)
+            {
+                Debug.LogError("[BuildAndroid] O Input System acabou de ser ativado: rode a configuração e reinicie o Unity " +
+                               "(ou rode setup-project.ps1) antes de buildar.");
+                return false;
+            }
 
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outputPath)));
             EditorUserBuildSettings.buildAppBundle = false;
@@ -58,7 +65,7 @@ namespace Game.Editor
             return s.result == BuildResult.Succeeded;
         }
 
-        private static string GetArg(string name)
+        public static string GetArg(string name)
         {
             string[] args = Environment.GetCommandLineArgs();
             int i = Array.IndexOf(args, name);

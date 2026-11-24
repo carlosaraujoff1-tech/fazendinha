@@ -77,12 +77,24 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Resultados Unity
 
-      - name: Build APK (configura o projeto e gera a cena antes)
+      # 1ª execução do Unity: configura o projeto (Input System, URP, cena). A troca de Input System
+      # só vale depois de reiniciar o editor, por isso a build é uma 2ª execução separada.
+      - name: Configurar projeto
+        if: steps.check.outputs.ok == 'true'
+        uses: game-ci/unity-builder@v4
+        with:
+          targetPlatform: Android
+          buildMethod: Game.Editor.ProjectSetup.ApplyFromCommandLine
+          buildName: setup
+          allowDirtyBuild: true
+
+      - name: Build APK
         if: steps.check.outputs.ok == 'true'
         uses: game-ci/unity-builder@v4
         with:
           targetPlatform: Android
           buildMethod: Game.Editor.BuildAndroid.BuildDebugApk
+          buildName: FazendaMercadinho-debug
           allowDirtyBuild: true
 
       - name: Guardar APK como artefato
@@ -90,7 +102,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: apk-debug
-          path: Builds/Android/*.apk
+          path: build/Android/**/*.apk
           if-no-files-found: error
 
       - name: Publicar APK (link para o celular)
@@ -101,7 +113,7 @@ jobs:
           name: APK de teste (último build)
           prerelease: true
           make_latest: false
-          files: Builds/Android/*.apk
+          files: build/Android/**/*.apk
           body: |
             Build automática do commit ${{ github.sha }}.
             No celular: toque no arquivo .apk abaixo para baixar e instalar.
