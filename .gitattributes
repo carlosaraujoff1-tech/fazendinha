@@ -52,3 +52,7 @@
 *.so    filter=lfs diff=lfs merge=lfs -text
 *.aar   filter=lfs diff=lfs merge=lfs -text
 *.jar   filter=lfs diff=lfs merge=lfs -text
+
+# Exceção: modelos pequenos da Quaternius (CC0, ~3 MB) ficam no git normal porque o ambiente do
+# Claude na nuvem não alcança o servidor de LFS. Ver Docs/decisions/2026-11-24-arte-3d-etapa6.md
+Assets/ThirdParty/Quaternius/**/*.fbx !filter !diff !merge binary
