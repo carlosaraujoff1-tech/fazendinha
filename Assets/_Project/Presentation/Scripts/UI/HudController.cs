@@ -81,8 +81,8 @@ namespace Game.Presentation.UI
             _scan.gameObject.SetActive(inStore);
             _furniture.gameObject.SetActive(inStore);
             _supplier.gameObject.SetActive(inStore);
-            ((Image)_tabFarm.targetGraphic).color = inStore ? UiFactory.ButtonDisabled : UiFactory.ButtonColor;
-            ((Image)_tabStore.targetGraphic).color = inStore ? UiFactory.ButtonColor : UiFactory.ButtonDisabled;
+            UiFactory.SetStyle(_tabFarm, inStore ? ButtonStyle.Grey : ButtonStyle.Yellow);
+            UiFactory.SetStyle(_tabStore, inStore ? ButtonStyle.Yellow : ButtonStyle.Grey);
             if (inStore)
             {
                 RefreshStore(root);

@@ -50,6 +50,8 @@ namespace Game.Presentation.Farm
             return new Vector3(col * Pitch - width * 0.5f, 0f, -row * Pitch);
         }
 
+        public Vector3 PlotWorldPosition(int index) => transform.TransformPoint(PlotLocalPosition(index));
+
         /// <summary>Retângulo (xz) ocupado pelas parcelas, para limitar a câmera.</summary>
         public Rect Bounds()
         {

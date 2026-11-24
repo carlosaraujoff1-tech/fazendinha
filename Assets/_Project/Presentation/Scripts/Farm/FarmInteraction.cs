@@ -1,6 +1,7 @@
 using Game.Core.Display;
 using Game.Core.Farm;
 using Game.Presentation.Controls;
+using Game.Presentation.Effects;
 using Game.Presentation.UI;
 using UnityEngine;
 
@@ -58,22 +59,35 @@ namespace Game.Presentation.Farm
             switch (FarmRules.GetPhase(plot, root.NowMs))
             {
                 case PlotPhase.Empty:
+                    SoundPlayer.Play("click");
                     if (_plantMenu != null) _plantMenu.Open(index);
                     break;
                 case PlotPhase.Growing:
                     if (!plot.Watered)
                     {
-                        if (root.Execute(new WaterCommand(index)).IsSuccess) Toast.Show("Regado! -25% do tempo");
+                        if (root.Execute(new WaterCommand(index)).IsSuccess)
+                        {
+                            var pos = farmView.PlotWorldPosition(index);
+                            FxPlayer.Play("water", pos);
+                            SoundPlayer.Play("water");
+                            FloatingTextLayer.Show(pos, "Regado! -25% tempo", new Color(0.6f, 0.85f, 1f));
+                        }
                     }
                     else
                     {
-                        Toast.Show("Pronto em " + DisplayFormat.Duration(FarmRules.RemainingMs(plot, root.NowMs)));
+                        FloatingTextLayer.Show(farmView.PlotWorldPosition(index),
+                            "Pronto em " + DisplayFormat.Duration(FarmRules.RemainingMs(plot, root.NowMs)), Color.white);
                     }
                     break;
                 case PlotPhase.Ready:
                     string cropName = root.Catalog.TryGetCrop(plot.CropId, out var crop) ? crop.Name : plot.CropId;
                     int qty = crop != null ? crop.Yield : 0;
-                    if (root.Execute(new HarvestCommand(index)).IsSuccess) Toast.Show($"+{qty} {cropName} no armazém");
+                    if (root.Execute(new HarvestCommand(index)).IsSuccess)
+                    {
+                        var pos = farmView.PlotWorldPosition(index);
+                        FxPlayer.Play("harvest", pos + Vector3.up * 0.3f);
+                        FloatingTextLayer.Show(pos, $"+{qty} {cropName}", new Color(0.65f, 1f, 0.45f));
+                    }
                     break;
             }
         }

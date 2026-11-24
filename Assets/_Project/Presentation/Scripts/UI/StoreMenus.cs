@@ -25,7 +25,7 @@ namespace Game.Presentation.UI
 
         private void Start()
         {
-            var panel = UiFactory.Panel("StoreMenu", transform, new Color(0.1f, 0.1f, 0.1f, 0.93f));
+            var panel = UiFactory.Panel("StoreMenu", transform, UiFactory.MenuColor);
             ((RectTransform)panel.transform).Anchor(new Vector2(0.18f, 0.14f), new Vector2(0.82f, 0.88f));
             _panel = panel.gameObject;
 
@@ -41,7 +41,7 @@ namespace Game.Presentation.UI
 
             var close = UiFactory.MakeButton("Close", panel.transform, "Fechar", Close);
             ((RectTransform)close.transform).Anchor(new Vector2(0.3f, 0.02f), new Vector2(0.7f, 0.12f));
-            ((Image)close.targetGraphic).color = new Color(0.5f, 0.2f, 0.2f);
+            UiFactory.SetStyle(close, ButtonStyle.Red);
             _panel.SetActive(false);
         }
 
@@ -94,7 +94,7 @@ namespace Game.Presentation.UI
             var a = UiFactory.MakeButton("Left", row, left, onLeft, 32);
             UiFactory.SetButton(a, left, leftEnabled);
             var b = UiFactory.MakeButton("Right", row, right, onRight, 32);
-            ((Image)b.targetGraphic).color = new Color(0.25f, 0.35f, 0.6f);
+            UiFactory.SetStyle(b, ButtonStyle.Blue);
             _rows.Add(row.gameObject);
         }
 

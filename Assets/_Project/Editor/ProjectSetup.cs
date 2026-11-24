@@ -88,6 +88,8 @@ namespace Game.Editor
             PlayerSettings.SetScriptingBackend(android, ScriptingImplementation.IL2CPP);
             PlayerSettings.SetApiCompatibilityLevel(android, ApiCompatibilityLevel.NET_Standard);
             PlayerSettings.SetManagedStrippingLevel(android, ManagedStrippingLevel.Low);
+            // Sem isso o build remove classes do motor só criadas por código (ex.: CapsuleCollider de CreatePrimitive).
+            PlayerSettings.stripEngineCode = false;
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
 
             // API mínima / alvo
@@ -137,17 +139,17 @@ namespace Game.Editor
 
             // Perfil mobile. Usa SerializedObject para não depender de setters que mudam entre versões do URP.
             var so = new SerializedObject(urp);
-            Set(so, "m_SupportsHDR", false);
+            Set(so, "m_SupportsHDR", true); // bloom bonito; formato compacto R11G11B10 no mobile
             Set(so, "m_MSAA", 2);
             Set(so, "m_RenderScale", 1f);
             Set(so, "m_UseSRPBatcher", true);
             Set(so, "m_RequireDepthTexture", false);
             Set(so, "m_RequireOpaqueTexture", false);
             Set(so, "m_MainLightShadowsSupported", true);
-            Set(so, "m_MainLightShadowmapResolution", 1024);
-            Set(so, "m_ShadowDistance", 30f);
-            Set(so, "m_ShadowCascadeCount", 1);
-            Set(so, "m_SoftShadowsSupported", false);
+            Set(so, "m_MainLightShadowmapResolution", 2048);
+            Set(so, "m_ShadowDistance", 45f);
+            Set(so, "m_ShadowCascadeCount", 2);
+            Set(so, "m_SoftShadowsSupported", true);
             Set(so, "m_AdditionalLightsRenderingMode", 0); // desligadas
             Set(so, "m_AdditionalLightShadowsSupported", false);
             so.ApplyModifiedPropertiesWithoutUndo();

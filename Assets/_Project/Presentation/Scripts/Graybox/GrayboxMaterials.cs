@@ -16,22 +16,32 @@ namespace Game.Presentation.Graybox
 
             if (_template == null)
             {
-                // Usa o material padrão do pipeline ativo (URP Lit) como base.
-                var probe = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                _template = probe.GetComponent<Renderer>().sharedMaterial;
-                Object.Destroy(probe);
+                // Base = material ASSET referenciado pelo catálogo visual (garante o shader URP no build).
+                // Criar a partir do material padrão de CreatePrimitive deixava tudo ROSA no Android (shader removido).
+                var visuals = GameRoot.Instance != null ? GameRoot.Instance.Visuals : null;
+                if (visuals != null && visuals.baseLit != null) _template = visuals.baseLit;
+                else
+                {
+                    var probe = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    _template = probe.GetComponent<Renderer>().sharedMaterial;
+                    Object.Destroy(probe);
+                }
             }
-            mat = new Material(_template) { color = color, enableInstancing = true };
+            mat = new Material(_template) { enableInstancing = true };
+            mat.SetColor("_BaseColor", color);
             Cache[key] = mat;
             return mat;
         }
 
-        public static GameObject Primitive(PrimitiveType type, string name, Transform parent, Color color, bool keepCollider = false)
+        public static GameObject Primitive(PrimitiveType type, string name, Transform parent, Color color, bool keepCollider = false) =>
+            Primitive(type, name, parent, Get(color), keepCollider);
+
+        public static GameObject Primitive(PrimitiveType type, string name, Transform parent, Material material, bool keepCollider = false)
         {
             var go = GameObject.CreatePrimitive(type);
             go.name = name;
             go.transform.SetParent(parent, false);
-            go.GetComponent<Renderer>().sharedMaterial = Get(color);
+            go.GetComponent<Renderer>().sharedMaterial = material;
             if (!keepCollider)
             {
                 var col = go.GetComponent<Collider>();

@@ -15,7 +15,7 @@ namespace Game.Presentation.UI
 
         private void Start()
         {
-            var panel = UiFactory.Panel("WelcomeBack", transform, new Color(0.08f, 0.12f, 0.08f, 0.95f));
+            var panel = UiFactory.Panel("WelcomeBack", transform, UiFactory.MenuColor);
             ((RectTransform)panel.transform).Anchor(new Vector2(0.28f, 0.2f), new Vector2(0.72f, 0.82f));
             _panel = panel.gameObject;
             var title = UiFactory.Label("Title", panel.transform, "Bem-vindo de volta!", 54);

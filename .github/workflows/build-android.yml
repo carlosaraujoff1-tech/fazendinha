@@ -117,3 +117,46 @@ jobs:
           body: |
             Build automática do commit ${{ github.sha }}.
             No celular: toque no arquivo .apk abaixo para baixar e instalar.
+
+      # ---------- Prints automáticos (para o Claude ver o jogo de verdade) ----------
+      - name: Build Linux para prints
+        if: steps.check.outputs.ok == 'true'
+        continue-on-error: true
+        uses: game-ci/unity-builder@v4
+        with:
+          targetPlatform: StandaloneLinux64
+          buildMethod: Game.Editor.BuildScreenshots.BuildLinux
+          buildName: fazenda
+          allowDirtyBuild: true
+
+      - name: Rodar o jogo e capturar telas (xvfb, render por software)
+        if: steps.check.outputs.ok == 'true'
+        continue-on-error: true
+        timeout-minutes: 10
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1 libgl1-mesa-dri libglx-mesa0 libglu1-mesa > /dev/null
+          sudo chmod -R a+rwX build || true
+          EXE=$(find build/StandaloneLinux64 -name "*.x86_64" | head -1)
+          echo "Executável: $EXE"
+          mkdir -p screenshots
+          timeout 420 xvfb-run -a -s "-screen 0 1920x1080x24" "$EXE" -screen-width 1920 -screen-height 1080 \
+            -screen-fullscreen 0 -force-glcore -logFile "$PWD/screenshots/player.log" \
+            -fazendaScreenshots "$PWD/screenshots" || echo "jogo saiu com código $?"
+          ls -la screenshots
+
+      - name: Publicar prints
+        if: steps.check.outputs.ok == 'true'
+        continue-on-error: true
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: screenshots-latest
+          name: Prints automáticos (último build)
+          prerelease: true
+          make_latest: false
+          files: |
+            screenshots/*.png
+            screenshots/player.log
+          body: Capturas automáticas do commit ${{ github.sha }} (jogo rodando em Linux com render por software).

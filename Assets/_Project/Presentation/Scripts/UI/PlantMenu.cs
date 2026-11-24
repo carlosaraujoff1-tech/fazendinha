@@ -19,7 +19,7 @@ namespace Game.Presentation.UI
         private void Start()
         {
             var root = GameRoot.Instance;
-            var panel = UiFactory.Panel("PlantMenu", transform, new Color(0.1f, 0.1f, 0.1f, 0.92f));
+            var panel = UiFactory.Panel("PlantMenu", transform, UiFactory.MenuColor);
             ((RectTransform)panel.transform).Anchor(new Vector2(0.25f, 0.14f), new Vector2(0.75f, 0.88f));
             _panel = panel.gameObject;
 
@@ -45,7 +45,7 @@ namespace Game.Presentation.UI
 
             var close = UiFactory.MakeButton("Close", panel.transform, "Fechar", Close);
             ((RectTransform)close.transform).Anchor(new Vector2(0.3f, 0.02f), new Vector2(0.7f, 0.12f));
-            ((Image)close.targetGraphic).color = new Color(0.5f, 0.2f, 0.2f);
+            UiFactory.SetStyle(close, ButtonStyle.Red);
 
             _panel.SetActive(false);
         }
@@ -74,7 +74,17 @@ namespace Game.Presentation.UI
         private void Plant(CropDef crop)
         {
             if (_plotIndex < 0) return;
-            if (GameRoot.Instance.Execute(new PlantCommand(_plotIndex, crop.Id)).IsSuccess) Close();
+            int plot = _plotIndex;
+            if (!GameRoot.Instance.Execute(new PlantCommand(plot, crop.Id)).IsSuccess) return;
+            Close();
+            var farm = FindFirstObjectByType<Game.Presentation.Farm.FarmView>();
+            if (farm != null)
+            {
+                var pos = farm.PlotWorldPosition(plot);
+                Game.Presentation.Effects.FxPlayer.Play("plant", pos + Vector3.up * 0.2f);
+                FloatingTextLayer.Show(pos, $"-{crop.SeedCost} moedas", new Color(1f, 0.85f, 0.4f));
+            }
+            Game.Presentation.Effects.SoundPlayer.Play("plant");
         }
     }
 }

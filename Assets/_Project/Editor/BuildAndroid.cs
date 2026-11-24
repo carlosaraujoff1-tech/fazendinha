@@ -45,7 +45,7 @@ namespace Game.Editor
 
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outputPath)));
             EditorUserBuildSettings.buildAppBundle = false;
-            EditorUserBuildSettings.development = true;
+            EditorUserBuildSettings.development = false; // sem console de erros na tela
 
             var scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
             if (scenes.Length == 0) throw new InvalidOperationException("Nenhuma cena na Build Settings.");
@@ -56,7 +56,7 @@ namespace Game.Editor
                 locationPathName = outputPath,
                 target = BuildTarget.Android,
                 targetGroup = BuildTargetGroup.Android,
-                options = BuildOptions.Development,
+                options = BuildOptions.None,
             };
 
             BuildReport report = BuildPipeline.BuildPlayer(options);

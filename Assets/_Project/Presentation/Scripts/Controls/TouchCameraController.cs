@@ -18,8 +18,8 @@ namespace Game.Presentation.Controls
         [SerializeField] private Camera targetCamera;
         [SerializeField] private float minDistance = 8f;
         [SerializeField] private float maxDistance = 30f;
-        [SerializeField] private float distance = 16f;
-        [SerializeField] private float pitch = 55f;
+        [SerializeField] private float distance = 17f;
+        [SerializeField] private float pitch = 50f;
         [SerializeField] private Vector2 panMin = new Vector2(-10, -10);
         [SerializeField] private Vector2 panMax = new Vector2(10, 10);
         [SerializeField] private float tapMaxSeconds = 0.35f;
@@ -41,6 +41,12 @@ namespace Game.Presentation.Controls
         public Camera Camera => targetCamera;
 
         public void SetBounds(Vector2 min, Vector2 max) { panMin = min; panMax = max; ClampFocus(); Apply(); }
+
+        /// <summary>Distância da câmera ao foco (zoom), limitada ao mínimo/máximo.</summary>
+        public void SetZoom(float newDistance) { distance = Mathf.Clamp(newDistance, minDistance, maxDistance); Apply(); }
+
+        public float MinDistance => minDistance;
+        public float MaxDistance => maxDistance;
 
         public void FocusOn(Vector3 worldPoint) { _focus = new Vector3(worldPoint.x, 0, worldPoint.z); ClampFocus(); Apply(); }
 
