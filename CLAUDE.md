@@ -1,7 +1,7 @@
 # CLAUDE.md — Fazenda & Mercadinho Tycoon
 
 Especificação completa: `Docs/PROMPT_MESTRE.md` (ler antes de qualquer etapa).
-Jogo mobile 3D estilizado, retrato, Unity 6.3 LTS + URP, C#, IL2CPP/ARM64. **Só Android na v1.**
+Jogo mobile 3D estilizado, **paisagem** (decisão do dono, substitui o "retrato" do PROMPT_MESTRE), Unity 6.3 LTS + URP, C#, IL2CPP/ARM64. **Só Android na v1.**
 
 ## Regras inegociáveis (resumo da seção 0)
 1. **Uma etapa por vez.** Nunca começar a próxima sem o "ok" do dono.
@@ -57,5 +57,5 @@ Unity (testes EditMode/PlayMode, build, celular) o dono roda no Windows com os s
 Ver `Docs/decisions/2026-11-24-ambiente-nuvem-e-testes-core.md`.
 
 ## Configuração do projeto (aplicada por `ProjectSetup.cs`)
-Pacote `com.fazendamercadinho.tycoon` · retrato fixo · IL2CPP · ARM64 · min API 26 · target API 36 ·
+Pacote `com.fazendamercadinho.tycoon` · paisagem (esquerda/direita) · IL2CPP · ARM64 · min API 26 · target API 36 ·
 Vulkan + GLES3 · Linear · Input System novo · URP mobile (sem HDR, MSAA 2x, 1 cascata, sem luzes adicionais).

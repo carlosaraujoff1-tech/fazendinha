@@ -8,7 +8,7 @@ namespace Game.Presentation.Farm
     /// <summary>Monta e atualiza a grade de parcelas a partir do estado.</summary>
     public sealed class FarmView : MonoBehaviour
     {
-        [SerializeField] private int columns = 4;
+        [SerializeField] private int columns = 5;
         [SerializeField] private float plotSize = 1.6f;
         [SerializeField] private float gap = 0.4f;
         [SerializeField] private float refreshSeconds = 0.2f;

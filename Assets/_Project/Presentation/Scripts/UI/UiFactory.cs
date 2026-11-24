@@ -6,7 +6,7 @@ namespace Game.Presentation.UI
 {
     /// <summary>
     /// Cria UI uGUI por código (gray box). Sem prefabs nem YAML: a UI final da Etapa 5 substitui isto.
-    /// Referência de layout: 1080 x 1920 (retrato).
+    /// Referência de layout: 1920 x 1080 (paisagem).
     /// </summary>
     public static class UiFactory
     {

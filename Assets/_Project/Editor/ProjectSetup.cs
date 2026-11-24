@@ -61,12 +61,12 @@ namespace Game.Editor
             PlayerSettings.bundleVersion = Version;
             PlayerSettings.SetApplicationIdentifier(android, AndroidPackageId);
 
-            // Retrato fixo
-            PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
-            PlayerSettings.allowedAutorotateToPortrait = true;
+            // Paisagem (gira entre as duas paisagens, nunca retrato)
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
+            PlayerSettings.allowedAutorotateToPortrait = false;
             PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
-            PlayerSettings.allowedAutorotateToLandscapeLeft = false;
-            PlayerSettings.allowedAutorotateToLandscapeRight = false;
+            PlayerSettings.allowedAutorotateToLandscapeLeft = true;
+            PlayerSettings.allowedAutorotateToLandscapeRight = true;
 
             // IL2CPP + ARM64
             PlayerSettings.SetScriptingBackend(android, ScriptingImplementation.IL2CPP);

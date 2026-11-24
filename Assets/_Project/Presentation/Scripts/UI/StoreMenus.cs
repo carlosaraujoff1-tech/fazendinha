@@ -24,7 +24,7 @@ namespace Game.Presentation.UI
         private void Start()
         {
             var panel = UiFactory.Panel("StoreMenu", transform, new Color(0.1f, 0.1f, 0.1f, 0.93f));
-            ((RectTransform)panel.transform).Anchor(new Vector2(0.04f, 0.14f), new Vector2(0.96f, 0.78f));
+            ((RectTransform)panel.transform).Anchor(new Vector2(0.18f, 0.14f), new Vector2(0.82f, 0.88f));
             _panel = panel.gameObject;
 
             _title = UiFactory.Label("Title", panel.transform, "", 50);
@@ -73,10 +73,27 @@ namespace Game.Presentation.UI
         private Button Row(string text, Action onClick, bool interactable = true)
         {
             var b = UiFactory.MakeButton("Row", _list, text, onClick, 36);
-            b.gameObject.AddComponent<LayoutElement>().preferredHeight = 105;
+            b.gameObject.AddComponent<LayoutElement>().preferredHeight = 80;
             UiFactory.SetButton(b, text, interactable);
             _rows.Add(b.gameObject);
             return b;
+        }
+
+        /// <summary>Linha com dois botões lado a lado (paisagem: cabe repor e preço na mesma linha).</summary>
+        private void PairRow(string left, Action onLeft, bool leftEnabled, string right, Action onRight)
+        {
+            var row = UiFactory.Node("Pair", _list);
+            row.gameObject.AddComponent<LayoutElement>().preferredHeight = 80;
+            var h = row.gameObject.AddComponent<HorizontalLayoutGroup>();
+            h.spacing = 14;
+            h.childControlWidth = true;
+            h.childControlHeight = true;
+            h.childForceExpandWidth = true;
+            var a = UiFactory.MakeButton("Left", row, left, onLeft, 32);
+            UiFactory.SetButton(a, left, leftEnabled);
+            var b = UiFactory.MakeButton("Right", row, right, onRight, 32);
+            ((Image)b.targetGraphic).color = new Color(0.25f, 0.35f, 0.6f);
+            _rows.Add(row.gameObject);
         }
 
         private void Info(string text)
@@ -117,10 +134,9 @@ namespace Game.Presentation.UI
                 bool sameOrEmpty = onShelf == 0 || shelf.ProductId == p.Id;
                 int units = Math.Min(free, stock);
                 string label = $"Repor {p.Name} (armazém {stock})" + (units > 0 && sameOrEmpty ? $" +{units}" : "");
-                Row(label, () => root.Execute(new RestockCommand(shelfIndex, p.Id, units)), sameOrEmpty && units > 0);
-
                 long price = StoreRules.PriceOf(root.State, p);
-                Row($"Preço {p.Name}: {price} (P {p.ReferencePrice}) · {TagText(StoreRules.Tag(price, p.ReferencePrice))}",
+                PairRow(label, () => root.Execute(new RestockCommand(shelfIndex, p.Id, units)), sameOrEmpty && units > 0,
+                    $"Preço {price} (P {p.ReferencePrice}) · {TagText(StoreRules.Tag(price, p.ReferencePrice))}",
                     () => OpenPrice(p));
             }
         }

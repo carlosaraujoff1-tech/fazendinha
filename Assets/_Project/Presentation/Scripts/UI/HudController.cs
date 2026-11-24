@@ -30,7 +30,7 @@ namespace Game.Presentation.UI
         private void Start()
         {
             var top = UiFactory.Panel("TopBar", transform, UiFactory.PanelColor);
-            ((RectTransform)top.transform).Anchor(new Vector2(0, 0.93f), new Vector2(1, 1));
+            ((RectTransform)top.transform).Anchor(new Vector2(0, 0.91f), new Vector2(1, 1));
             _coins = UiFactory.Label("Coins", top.transform, "", 52, TextAnchor.MiddleLeft);
             ((RectTransform)_coins.transform).Anchor(new Vector2(0.04f, 0), new Vector2(0.6f, 1));
             _goal = UiFactory.Label("Goal", top.transform, "", 34, TextAnchor.MiddleRight);
@@ -38,23 +38,21 @@ namespace Game.Presentation.UI
 
             // Abas (as 5 da UI final chegam na Etapa 5)
             _area = FindFirstObjectByType<AreaSwitcher>();
-            var tabs = UiFactory.Panel("Tabs", transform, new Color(0, 0, 0, 0.8f));
-            ((RectTransform)tabs.transform).Anchor(new Vector2(0, 0), new Vector2(1, 0.07f));
-            _tabFarm = UiFactory.MakeButton("TabFarm", tabs.transform, "Fazenda", () => _area.Show(GameArea.Farm), 40);
-            ((RectTransform)_tabFarm.transform).Anchor(new Vector2(0.02f, 0.1f), new Vector2(0.49f, 0.9f));
-            _tabStore = UiFactory.MakeButton("TabStore", tabs.transform, "Mercadinho", () => _area.Show(GameArea.Store), 40);
-            ((RectTransform)_tabStore.transform).Anchor(new Vector2(0.51f, 0.1f), new Vector2(0.98f, 0.9f));
-
-            var bottom = UiFactory.Panel("ActionBar", transform, UiFactory.PanelColor);
-            ((RectTransform)bottom.transform).Anchor(new Vector2(0, 0.07f), new Vector2(1, 0.16f));
-            _warehouse = UiFactory.Label("Info", bottom.transform, "", 32, TextAnchor.MiddleLeft);
-            ((RectTransform)_warehouse.transform).Anchor(new Vector2(0.03f, 0), new Vector2(0.62f, 1));
-            _buyPlot = UiFactory.MakeButton("BuyPlot", bottom.transform, "", () => GameRoot.Instance.Execute(new BuyPlotCommand()), 34);
-            ((RectTransform)_buyPlot.transform).Anchor(new Vector2(0.64f, 0.12f), new Vector2(0.97f, 0.88f));
-            _scan = UiFactory.MakeButton("Scan", bottom.transform, "Passar item", StoreInteraction.Scan, 34);
-            ((RectTransform)_scan.transform).Anchor(new Vector2(0.64f, 0.12f), new Vector2(0.97f, 0.88f));
-            _furniture = UiFactory.MakeButton("Furniture", bottom.transform, "+ Móvel", () => FindFirstObjectByType<StoreMenus>()?.OpenFurniture(), 34);
-            ((RectTransform)_furniture.transform).Anchor(new Vector2(0.42f, 0.12f), new Vector2(0.62f, 0.88f));
+            // Paisagem: uma barra inferior com abas à esquerda, informação no meio e ações à direita.
+            var bottom = UiFactory.Panel("BottomBar", transform, UiFactory.PanelColor);
+            ((RectTransform)bottom.transform).Anchor(new Vector2(0, 0), new Vector2(1, 0.12f));
+            _tabFarm = UiFactory.MakeButton("TabFarm", bottom.transform, "Fazenda", () => _area.Show(GameArea.Farm), 36);
+            ((RectTransform)_tabFarm.transform).Anchor(new Vector2(0.01f, 0.12f), new Vector2(0.13f, 0.88f));
+            _tabStore = UiFactory.MakeButton("TabStore", bottom.transform, "Mercadinho", () => _area.Show(GameArea.Store), 36);
+            ((RectTransform)_tabStore.transform).Anchor(new Vector2(0.14f, 0.12f), new Vector2(0.27f, 0.88f));
+            _warehouse = UiFactory.Label("Info", bottom.transform, "", 30, TextAnchor.MiddleLeft);
+            ((RectTransform)_warehouse.transform).Anchor(new Vector2(0.29f, 0), new Vector2(0.64f, 1));
+            _furniture = UiFactory.MakeButton("Furniture", bottom.transform, "+ Móvel", () => FindFirstObjectByType<StoreMenus>()?.OpenFurniture(), 32);
+            ((RectTransform)_furniture.transform).Anchor(new Vector2(0.65f, 0.12f), new Vector2(0.79f, 0.88f));
+            _buyPlot = UiFactory.MakeButton("BuyPlot", bottom.transform, "", () => GameRoot.Instance.Execute(new BuyPlotCommand()), 32);
+            ((RectTransform)_buyPlot.transform).Anchor(new Vector2(0.80f, 0.12f), new Vector2(0.99f, 0.88f));
+            _scan = UiFactory.MakeButton("Scan", bottom.transform, "Passar item", StoreInteraction.Scan, 32);
+            ((RectTransform)_scan.transform).Anchor(new Vector2(0.80f, 0.12f), new Vector2(0.99f, 0.88f));
 
             if (_area != null) _area.Changed += _ => Refresh();
             Refresh();

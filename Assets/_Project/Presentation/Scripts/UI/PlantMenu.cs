@@ -20,7 +20,7 @@ namespace Game.Presentation.UI
         {
             var root = GameRoot.Instance;
             var panel = UiFactory.Panel("PlantMenu", transform, new Color(0.1f, 0.1f, 0.1f, 0.92f));
-            ((RectTransform)panel.transform).Anchor(new Vector2(0.05f, 0.12f), new Vector2(0.95f, 0.72f));
+            ((RectTransform)panel.transform).Anchor(new Vector2(0.25f, 0.14f), new Vector2(0.75f, 0.88f));
             _panel = panel.gameObject;
 
             var title = UiFactory.Label("Title", panel.transform, "Plantar", 56);
@@ -39,7 +39,7 @@ namespace Game.Presentation.UI
                 var c = crop;
                 var button = UiFactory.MakeButton("Crop_" + c.Id, _list, c.Name, () => Plant(c));
                 var le = button.gameObject.AddComponent<LayoutElement>();
-                le.preferredHeight = 120;
+                le.preferredHeight = 88;
                 _buttons.Add((c, button));
             }
 

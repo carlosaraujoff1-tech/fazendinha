@@ -23,7 +23,7 @@ namespace Game.Presentation.UI
         {
             _instance = this;
             _panel = UiFactory.Panel("Toast", transform, new Color(0, 0, 0, 0.75f));
-            ((RectTransform)_panel.transform).Anchor(new Vector2(0.1f, 0.62f), new Vector2(0.9f, 0.69f));
+            ((RectTransform)_panel.transform).Anchor(new Vector2(0.3f, 0.72f), new Vector2(0.7f, 0.82f));
             _panel.raycastTarget = false;
             _label = UiFactory.Label("Text", _panel.transform, "", 44);
             ((RectTransform)_label.transform).Anchor(Vector2.zero, Vector2.one);
