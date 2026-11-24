@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Espelho só da parte C# pura de Game.Services (sem UnityEngine). -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>Game.Services.Pure</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(ProjectRootDir)Assets/_Project/Services/FileSystem/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Game.Core/Game.Core.csproj" />
+  </ItemGroup>
+</Project>

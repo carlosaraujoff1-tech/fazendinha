@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Espelho de Assets/_Project/Core. netstandard2.1 = mesmo perfil de API do Unity. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>Game.Core</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(ProjectRootDir)Assets/_Project/Core/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- com.unity.nuget.newtonsoft-json 3.2.x traz Newtonsoft.Json 13.0.x -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,11 @@
+<Project>
+  <!-- Comum aos projetos espelho: mesma versão de C# do Unity (9) e avisos viram erro. -->
+  <PropertyGroup>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
+    <ProjectRootDir>$(MSBuildThisFileDirectory)../../</ProjectRootDir>
+  </PropertyGroup>
+</Project>

@@ -18,7 +18,7 @@
 ExportedObj/
 .consulo/
 *.csproj
-!Tools/CoreTests/*.csproj
+!Tools/CoreTests/**/*.csproj
 *.unityproj
 *.sln
 *.suo
@@ -48,8 +48,8 @@ crashlytics-build.properties
 *.app
 
 # Testes Core (dotnet)
-Tools/CoreTests/bin/
-Tools/CoreTests/obj/
+Tools/CoreTests/**/bin/
+Tools/CoreTests/**/obj/
 
 # ---- Segredos: NUNCA commitar ----
 *.keystore
