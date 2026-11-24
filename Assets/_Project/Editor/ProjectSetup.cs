@@ -1,22 +1,16 @@
 using System;
 using System.IO;
-using Game.Presentation;
 using UnityEditor;
 using UnityEditor.Build;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem.UI;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 namespace Game.Editor
 {
     /// <summary>
     /// Configura o projeto de forma reprodutível (idempotente): Player Settings Android,
-    /// URP mobile e a cena Boot. Rodar pelo menu "Fazenda/Configurar projeto" ou em batchmode:
+    /// URP mobile e a cena Main (via SceneGenerator). Rodar pelo menu "Fazenda/Configurar projeto" ou em batchmode:
     /// Unity -batchmode -quit -buildTarget Android -executeMethod Game.Editor.ProjectSetup.ApplyFromCommandLine
     /// </summary>
     public static class ProjectSetup
@@ -31,7 +25,6 @@ namespace Game.Editor
         public const string SettingsDir = "Assets/_Project/Presentation/Settings";
         public const string UrpAssetPath = SettingsDir + "/URP-Mobile.asset";
         public const string UrpRendererPath = SettingsDir + "/URP-Mobile_Renderer.asset";
-        public const string BootScenePath = "Assets/_Project/Presentation/Scenes/Boot.unity";
 
         [MenuItem("Fazenda/Configurar projeto (Etapa 0)")]
         public static void Apply()
@@ -39,7 +32,7 @@ namespace Game.Editor
             ConfigurePlayer();
             var urp = ConfigureUrp();
             ConfigureQuality(urp);
-            GenerateBootScene();
+            SceneGenerator.GenerateMain();
             AssetDatabase.SaveAssets();
             Debug.Log("[ProjectSetup] Projeto configurado.");
         }
@@ -157,60 +150,6 @@ namespace Game.Editor
                 QualitySettings.vSyncCount = 0;
             }
             QualitySettings.SetQualityLevel(current, false);
-        }
-
-        private static void GenerateBootScene()
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(BootScenePath));
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-
-            var cameraGo = new GameObject("Main Camera") { tag = "MainCamera" };
-            var camera = cameraGo.AddComponent<Camera>();
-            camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0.55f, 0.78f, 0.45f);
-            cameraGo.AddComponent<UniversalAdditionalCameraData>();
-            cameraGo.transform.SetPositionAndRotation(new Vector3(0, 10, -10), Quaternion.Euler(45, 0, 0));
-
-            var lightGo = new GameObject("Directional Light");
-            var light = lightGo.AddComponent<Light>();
-            light.type = LightType.Directional;
-            lightGo.transform.rotation = Quaternion.Euler(50, -30, 0);
-
-            var canvasGo = new GameObject("Canvas");
-            var canvas = canvasGo.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            var scaler = canvasGo.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1080, 1920);
-            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            scaler.matchWidthOrHeight = 0f;
-            canvasGo.AddComponent<GraphicRaycaster>();
-
-            var labelGo = new GameObject("Status", typeof(RectTransform));
-            labelGo.transform.SetParent(canvasGo.transform, false);
-            var rect = (RectTransform)labelGo.transform;
-            rect.anchorMin = new Vector2(0.05f, 0.3f);
-            rect.anchorMax = new Vector2(0.95f, 0.7f);
-            rect.offsetMin = rect.offsetMax = Vector2.zero;
-            var text = labelGo.AddComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.fontSize = 56;
-            text.alignment = TextAnchor.MiddleCenter;
-            text.color = Color.white;
-            text.text = "Carregando...";
-
-            var eventSystemGo = new GameObject("EventSystem");
-            eventSystemGo.AddComponent<EventSystem>();
-            eventSystemGo.AddComponent<InputSystemUIInputModule>();
-
-            var bootGo = new GameObject("Bootstrap");
-            var bootstrap = bootGo.AddComponent<Bootstrap>();
-            var bootSo = new SerializedObject(bootstrap);
-            bootSo.FindProperty("statusLabel").objectReferenceValue = text;
-            bootSo.ApplyModifiedPropertiesWithoutUndo();
-
-            EditorSceneManager.SaveScene(scene, BootScenePath);
-            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(BootScenePath, true) };
         }
 
         private static void Set(SerializedObject so, string name, bool value)
