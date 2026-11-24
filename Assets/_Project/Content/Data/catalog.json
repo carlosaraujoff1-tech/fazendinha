@@ -13,17 +13,52 @@
     "plotBaseCost": 50
   },
   "products": [
-    { "id": "alface",  "name": "Alface", "category": "hortifruti", "referencePrice": 10, "shelfLifeSeconds": 21600 },
-    { "id": "cenoura", "name": "Cenoura", "category": "hortifruti", "referencePrice": 14, "shelfLifeSeconds": 43200 },
-    { "id": "batata",  "name": "Batata", "category": "hortifruti", "referencePrice": 18, "shelfLifeSeconds": 86400 },
-    { "id": "tomate",  "name": "Tomate", "category": "hortifruti", "referencePrice": 24, "shelfLifeSeconds": 28800 },
-    { "id": "milho",   "name": "Milho", "category": "hortifruti", "referencePrice": 30, "shelfLifeSeconds": 43200 }
+    {"id": "alface", "name": "Alface", "category": "hortifruti", "referencePrice": 10, "shelfLifeSeconds": 21600},
+    {"id": "cenoura", "name": "Cenoura", "category": "hortifruti", "referencePrice": 14, "shelfLifeSeconds": 43200},
+    {"id": "batata", "name": "Batata", "category": "hortifruti", "referencePrice": 18, "shelfLifeSeconds": 86400},
+    {"id": "tomate", "name": "Tomate", "category": "hortifruti", "referencePrice": 24, "shelfLifeSeconds": 28800},
+    {"id": "milho", "name": "Milho", "category": "hortifruti", "referencePrice": 30, "shelfLifeSeconds": 43200},
+    {"id": "leite", "name": "Leite", "category": "laticinios", "referencePrice": 12, "shelfLifeSeconds": 172800},
+    {"id": "queijo", "name": "Queijo", "category": "laticinios", "referencePrice": 28, "shelfLifeSeconds": 345600},
+    {"id": "arroz", "name": "Arroz", "category": "mercearia", "referencePrice": 20, "shelfLifeSeconds": 0},
+    {"id": "feijao", "name": "Feijão", "category": "mercearia", "referencePrice": 16, "shelfLifeSeconds": 0}
   ],
   "crops": [
-    { "id": "alface",  "name": "Alface", "product": "alface",  "growSeconds": 60,   "seedCost": 10, "yield": 4, "unlockLevel": 1 },
-    { "id": "cenoura", "name": "Cenoura", "product": "cenoura", "growSeconds": 180,  "seedCost": 18, "yield": 5, "unlockLevel": 1 },
-    { "id": "batata",  "name": "Batata", "product": "batata",  "growSeconds": 480,  "seedCost": 27, "yield": 6, "unlockLevel": 1 },
-    { "id": "tomate",  "name": "Tomate", "product": "tomate",  "growSeconds": 900,  "seedCost": 36, "yield": 6, "unlockLevel": 1 },
-    { "id": "milho",   "name": "Milho", "product": "milho",   "growSeconds": 1800, "seedCost": 60, "yield": 8, "unlockLevel": 5 }
-  ]
+    {"id": "alface", "name": "Alface", "product": "alface", "growSeconds": 60, "seedCost": 10, "yield": 4, "unlockLevel": 1},
+    {"id": "cenoura", "name": "Cenoura", "product": "cenoura", "growSeconds": 180, "seedCost": 18, "yield": 5, "unlockLevel": 1},
+    {"id": "batata", "name": "Batata", "product": "batata", "growSeconds": 480, "seedCost": 27, "yield": 6, "unlockLevel": 1},
+    {"id": "tomate", "name": "Tomate", "product": "tomate", "growSeconds": 900, "seedCost": 36, "yield": 6, "unlockLevel": 1},
+    {"id": "milho", "name": "Milho", "product": "milho", "growSeconds": 1800, "seedCost": 60, "yield": 8, "unlockLevel": 5}
+  ],
+  "customerTypes": [
+    {"id": "economico", "name": "Econômico", "a": 0.0, "b": 0.2, "weight": 50, "patienceSeconds": 45},
+    {"id": "familia", "name": "Família", "a": 0.1, "b": 0.3, "weight": 35, "patienceSeconds": 60},
+    {"id": "gourmet", "name": "Gourmet", "a": 0.25, "b": 0.5, "weight": 15, "patienceSeconds": 75}
+  ],
+  "furniture": [
+    {"id": "banca", "name": "Banca de hortifruti", "category": "hortifruti", "capacity": 24, "baseCost": 120},
+    {"id": "geladeira", "name": "Geladeira", "category": "laticinios", "capacity": 16, "baseCost": 300},
+    {"id": "gondola", "name": "Gôndola", "category": "mercearia", "capacity": 30, "baseCost": 200}
+  ],
+  "store": {
+    "initialFurniture": [
+      "banca",
+      "banca",
+      "geladeira",
+      "gondola"
+    ],
+    "maxFurniture": 12,
+    "spawnIntervalSeconds": 6,
+    "maxCustomersInStore": 8,
+    "shoppingSecondsPerItem": 2.5,
+    "minItemsPerList": 1,
+    "maxItemsPerList": 4,
+    "minUnitsPerItem": 1,
+    "maxUnitsPerItem": 3,
+    "farmSealBonus": 0.05,
+    "discountQuantityFactor": 0.5,
+    "queueDrainPerCustomerAhead": 0.25,
+    "maxCatchUpSeconds": 10,
+    "maxPriceFactor": 10
+  }
 }

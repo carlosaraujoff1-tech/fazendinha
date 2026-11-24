@@ -42,6 +42,12 @@ namespace Game.Core.Commands
         public const string AlreadyReady = "already_ready";
         public const string AlreadyWatered = "already_watered";
         public const string MaxReached = "max_reached";
+        public const string UnknownShelf = "unknown_shelf";
+        public const string UnknownFurniture = "unknown_furniture";
+        public const string WrongCategory = "wrong_category";
+        public const string ShelfHasOtherProduct = "shelf_other_product";
+        public const string ShelfFull = "shelf_full";
+        public const string NoCustomer = "no_customer";
     }
 
     /// <summary>

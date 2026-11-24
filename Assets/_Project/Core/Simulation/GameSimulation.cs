@@ -1,4 +1,5 @@
 using Game.Core.Events;
+using Game.Core.Store;
 
 namespace Game.Core.Simulation
 {
@@ -22,6 +23,8 @@ namespace Game.Core.Simulation
                 ctx.State.Stats.UnitsExpired += units;
                 ctx.Events.Publish(new LotsExpired(expired));
             }
+
+            StoreSimulation.Advance(ctx);
 
             ctx.State.LastTickMs = now;
         }

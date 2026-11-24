@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Game.Core.Store;
 
 namespace Game.Core.Catalog
 {
@@ -26,17 +27,44 @@ namespace Game.Core.Catalog
 
         private readonly Dictionary<string, ProductDef> _products;
         private readonly Dictionary<string, CropDef> _crops;
+        private readonly Dictionary<string, CustomerTypeDef> _customers;
+        private readonly Dictionary<string, FurnitureDef> _furniture;
+        private readonly List<ProductDef> _productList;
+        private readonly List<CustomerTypeDef> _customerList;
 
-        private GameCatalog(Dictionary<string, ProductDef> products, Dictionary<string, CropDef> crops, EconomyConfig economy)
+        private GameCatalog(Dictionary<string, ProductDef> products, Dictionary<string, CropDef> crops,
+            Dictionary<string, CustomerTypeDef> customers, Dictionary<string, FurnitureDef> furniture,
+            List<ProductDef> productList, List<CustomerTypeDef> customerList, EconomyConfig economy, StoreConfig store)
         {
             _products = products;
             _crops = crops;
+            _customers = customers;
+            _furniture = furniture;
+            _productList = productList;
+            _customerList = customerList;
             Economy = economy;
+            Store = store;
         }
 
         public EconomyConfig Economy { get; }
-        public IEnumerable<ProductDef> Products => _products.Values;
+        public StoreConfig Store { get; }
+
+        /// <summary>Produtos na ordem em que aparecem nos dados (determinística).</summary>
+        public IReadOnlyList<ProductDef> Products => _productList;
         public IEnumerable<CropDef> Crops => _crops.Values;
+
+        /// <summary>Tipos de cliente na ordem dos dados (determinística para o sorteio).</summary>
+        public IReadOnlyList<CustomerTypeDef> CustomerTypes => _customerList;
+        public IEnumerable<FurnitureDef> Furniture => _furniture.Values;
+
+        public bool TryGetCustomerType(string id, out CustomerTypeDef def) => _customers.TryGetValue(id ?? "", out def);
+        public bool TryGetFurniture(string id, out FurnitureDef def) => _furniture.TryGetValue(id ?? "", out def);
+
+        public FurnitureDef GetFurniture(string id) =>
+            TryGetFurniture(id, out var f) ? f : throw new KeyNotFoundException($"Móvel '{id}' não existe no catálogo.");
+
+        public CustomerTypeDef GetCustomerType(string id) =>
+            TryGetCustomerType(id, out var c) ? c : throw new KeyNotFoundException($"Cliente '{id}' não existe no catálogo.");
 
         public bool TryGetProduct(string id, out ProductDef product) => _products.TryGetValue(id ?? "", out product);
         public bool TryGetCrop(string id, out CropDef crop) => _crops.TryGetValue(id ?? "", out crop);
@@ -48,12 +76,18 @@ namespace Game.Core.Catalog
             TryGetCrop(id, out var c) ? c : throw new KeyNotFoundException($"Cultura '{id}' não existe no catálogo.");
 
         /// <summary>Valida e monta o catálogo. Lança <see cref="CatalogException"/> com TODOS os erros encontrados.</summary>
-        public static GameCatalog Build(IEnumerable<ProductDef> products, IEnumerable<CropDef> crops, EconomyConfig economy = null)
+        public static GameCatalog Build(IEnumerable<ProductDef> products, IEnumerable<CropDef> crops, EconomyConfig economy = null,
+            IEnumerable<CustomerTypeDef> customerTypes = null, IEnumerable<FurnitureDef> furniture = null, StoreConfig store = null)
         {
             var errors = new List<string>();
             var productMap = new Dictionary<string, ProductDef>();
+            var productList = new List<ProductDef>();
             var cropMap = new Dictionary<string, CropDef>();
+            var customerMap = new Dictionary<string, CustomerTypeDef>();
+            var customerList = new List<CustomerTypeDef>();
+            var furnitureMap = new Dictionary<string, FurnitureDef>();
             economy = economy ?? new EconomyConfig();
+            store = store ?? new StoreConfig();
 
             foreach (var p in products ?? Enumerable.Empty<ProductDef>())
             {
@@ -64,6 +98,7 @@ namespace Game.Core.Catalog
                 if (p.ReferencePrice <= 0) errors.Add($"Produto '{p.Id}' com preço de referência <= 0.");
                 if (p.ShelfLifeSeconds < 0) errors.Add($"Produto '{p.Id}' com validade negativa.");
                 productMap[p.Id] = p;
+                productList.Add(p);
             }
 
             foreach (var c in crops ?? Enumerable.Empty<CropDef>())
@@ -88,8 +123,47 @@ namespace Game.Core.Catalog
             if (economy.MaxPlots < economy.InitialPlots) errors.Add("Máximo de parcelas menor que o inicial.");
             if (economy.PlotBaseCost < 0) errors.Add("Custo de parcela negativo.");
 
+            foreach (var c in customerTypes ?? Enumerable.Empty<CustomerTypeDef>())
+            {
+                if (c == null) { errors.Add("Tipo de cliente nulo."); continue; }
+                if (!CheckId(c.Id, "Cliente", errors)) continue;
+                if (customerMap.ContainsKey(c.Id)) { errors.Add($"Cliente '{c.Id}' duplicado."); continue; }
+                if (c.ToleranceA < 0) errors.Add($"Cliente '{c.Id}' com 'a' negativo.");
+                if (c.RangeB < 0) errors.Add($"Cliente '{c.Id}' com 'b' negativo.");
+                if (c.Weight < 0) errors.Add($"Cliente '{c.Id}' com peso negativo.");
+                if (c.PatienceSeconds <= 0) errors.Add($"Cliente '{c.Id}' com paciência <= 0.");
+                customerMap[c.Id] = c;
+                customerList.Add(c);
+            }
+            if (customerList.Count > 0 && customerList.Sum(c => Math.Max(0, c.Weight)) <= 0)
+                errors.Add("Soma dos pesos dos clientes deve ser > 0.");
+
+            var categories = new HashSet<string>(productList.Select(p => p.CategoryId));
+            foreach (var f in furniture ?? Enumerable.Empty<FurnitureDef>())
+            {
+                if (f == null) { errors.Add("Móvel nulo."); continue; }
+                if (!CheckId(f.Id, "Móvel", errors)) continue;
+                if (furnitureMap.ContainsKey(f.Id)) { errors.Add($"Móvel '{f.Id}' duplicado."); continue; }
+                if (!categories.Contains(f.CategoryId ?? "")) errors.Add($"Móvel '{f.Id}' com categoria sem produtos '{f.CategoryId}'.");
+                if (f.Capacity <= 0) errors.Add($"Móvel '{f.Id}' com capacidade <= 0.");
+                if (f.BaseCost < 0) errors.Add($"Móvel '{f.Id}' com custo negativo.");
+                furnitureMap[f.Id] = f;
+            }
+
+            foreach (var id in store.InitialFurniture ?? new string[0])
+                if (!furnitureMap.ContainsKey(id ?? "")) errors.Add($"Móvel inicial inexistente '{id}'.");
+            int initialCount = store.InitialFurniture?.Length ?? 0;
+            if (store.MaxFurniture < initialCount) errors.Add("Máximo de móveis menor que os iniciais.");
+            if (store.SpawnIntervalSeconds <= 0) errors.Add("Intervalo de clientes <= 0.");
+            if (store.MaxCustomersInStore < 1) errors.Add("Loja precisa aceitar ao menos 1 cliente.");
+            if (store.ShoppingSecondsPerItem < 0) errors.Add("Tempo por item negativo.");
+            if (store.MinItemsPerList < 1 || store.MaxItemsPerList < store.MinItemsPerList) errors.Add("Faixa de itens por lista inválida.");
+            if (store.MinUnitsPerItem < 1 || store.MaxUnitsPerItem < store.MinUnitsPerItem) errors.Add("Faixa de unidades por item inválida.");
+            if (store.MaxCatchUpSeconds <= 0) errors.Add("MaxCatchUpSeconds <= 0.");
+            if (store.MaxPriceFactor < 1) errors.Add("MaxPriceFactor < 1.");
+
             if (errors.Count > 0) throw new CatalogException(errors);
-            return new GameCatalog(productMap, cropMap, economy);
+            return new GameCatalog(productMap, cropMap, customerMap, furnitureMap, productList, customerList, economy, store);
         }
 
         private static bool CheckId(string id, string kind, List<string> errors)

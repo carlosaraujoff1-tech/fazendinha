@@ -4,6 +4,7 @@ using Game.Core.Economy;
 using Game.Core.Events;
 using Game.Core.Inventory;
 using Game.Core.State;
+using Game.Core.Store;
 using Game.Core.Time;
 
 namespace Game.Core.Simulation
@@ -50,6 +51,11 @@ namespace Game.Core.Simulation
                 },
             };
             for (int i = 0; i < catalog.Economy.InitialPlots; i++) state.Farm.Plots.Add(new PlotState());
+            foreach (var furnitureId in catalog.Store.InitialFurniture ?? new string[0])
+                state.Store.Shelves.Add(new ShelfState { FurnitureId = furnitureId });
+            state.Store.Rng.Seed = (ulong)now;
+            state.Store.LastStoreTickMs = now;
+            state.Store.NextSpawnAtMs = now + (long)(catalog.Store.SpawnIntervalSeconds * 1000);
             return state;
         }
     }

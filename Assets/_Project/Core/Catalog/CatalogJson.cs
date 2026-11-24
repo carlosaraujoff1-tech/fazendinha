@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Game.Core.Store;
 using Newtonsoft.Json;
 
 namespace Game.Core.Catalog
@@ -31,7 +32,11 @@ namespace Game.Core.Catalog
                 .Select(p => p == null ? null : new ProductDef(p.Id, p.Category, p.ReferencePrice, p.ShelfLifeSeconds, p.Name));
             var crops = (dto.Crops ?? new List<CropDto>())
                 .Select(c => c == null ? null : new CropDef(c.Id, c.Product, c.GrowSeconds, c.SeedCost, c.Yield, c.UnlockLevel, c.Name));
-            return GameCatalog.Build(products, crops, dto.Economy ?? new EconomyConfig());
+            var customers = (dto.CustomerTypes ?? new List<CustomerDto>())
+                .Select(c => c == null ? null : new CustomerTypeDef(c.Id, c.Name, c.A, c.B, c.Weight, c.PatienceSeconds));
+            var furniture = (dto.Furniture ?? new List<FurnitureDto>())
+                .Select(f => f == null ? null : new FurnitureDef(f.Id, f.Name, f.Category, f.Capacity, f.BaseCost));
+            return GameCatalog.Build(products, crops, dto.Economy ?? new EconomyConfig(), customers, furniture, dto.Store ?? new StoreConfig());
         }
 
         private sealed class CatalogDto
@@ -39,6 +44,28 @@ namespace Game.Core.Catalog
             [JsonProperty("economy")] public EconomyConfig Economy { get; set; }
             [JsonProperty("products")] public List<ProductDto> Products { get; set; }
             [JsonProperty("crops")] public List<CropDto> Crops { get; set; }
+            [JsonProperty("customerTypes")] public List<CustomerDto> CustomerTypes { get; set; }
+            [JsonProperty("furniture")] public List<FurnitureDto> Furniture { get; set; }
+            [JsonProperty("store")] public StoreConfig Store { get; set; }
+        }
+
+        private sealed class CustomerDto
+        {
+            [JsonProperty("id")] public string Id { get; set; }
+            [JsonProperty("name")] public string Name { get; set; }
+            [JsonProperty("a")] public double A { get; set; }
+            [JsonProperty("b")] public double B { get; set; }
+            [JsonProperty("weight")] public double Weight { get; set; }
+            [JsonProperty("patienceSeconds")] public int PatienceSeconds { get; set; }
+        }
+
+        private sealed class FurnitureDto
+        {
+            [JsonProperty("id")] public string Id { get; set; }
+            [JsonProperty("name")] public string Name { get; set; }
+            [JsonProperty("category")] public string Category { get; set; }
+            [JsonProperty("capacity")] public int Capacity { get; set; }
+            [JsonProperty("baseCost")] public long BaseCost { get; set; }
         }
 
         private sealed class ProductDto

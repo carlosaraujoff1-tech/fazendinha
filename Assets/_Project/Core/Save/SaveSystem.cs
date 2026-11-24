@@ -114,6 +114,14 @@ namespace Game.Core.Save
             if (s.Farm == null || s.Farm.Plots == null) throw new SaveFormatException("Save sem fazenda.");
             foreach (var plot in s.Farm.Plots)
                 if (plot == null) throw new SaveFormatException("Parcela nula no save.");
+            if (s.Store == null || s.Store.Shelves == null || s.Store.Customers == null || s.Store.Prices == null)
+                throw new SaveFormatException("Save sem loja.");
+            if (s.Store.Rng == null) s.Store.Rng = new Game.Core.Randomness.RngState();
+            if (s.Store.FurnitureBought == null) s.Store.FurnitureBought = new System.Collections.Generic.Dictionary<string, int>();
+            foreach (var shelf in s.Store.Shelves)
+                if (shelf == null || shelf.Lots == null) throw new SaveFormatException("Prateleira inválida no save.");
+            foreach (var customer in s.Store.Customers)
+                if (customer == null || customer.Cart == null || customer.List == null) throw new SaveFormatException("Cliente inválido no save.");
             if (s.Wallet.Coins < 0 || s.Wallet.Gems < 0) throw new SaveFormatException("Saldo negativo no save.");
             foreach (var lot in s.Warehouse)
             {
