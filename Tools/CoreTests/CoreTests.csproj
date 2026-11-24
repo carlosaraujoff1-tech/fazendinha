@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Espelho de Game.Core para rodar os testes de C# puro FORA do Unity (ex.: na nuvem / CI).
+    Compila os mesmos arquivos .cs de Assets/_Project/Core e Assets/_Project/Tests/EditMode/Core.
+    LangVersion 9 = mesma versão de C# do Unity, para não usar recursos que o Unity não compila.
+    A fonte da verdade continua sendo o Unity Test Runner (Tools/run-tests.ps1).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RootNamespace>Game.Tests</RootNamespace>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../Assets/_Project/Core/**/*.cs" />
+    <Compile Include="../../Assets/_Project/Tests/EditMode/Core/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+    <PackageReference Include="coverlet.collector" Version="6.0.2" />
+  </ItemGroup>
+</Project>
