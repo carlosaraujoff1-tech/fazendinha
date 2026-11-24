@@ -67,11 +67,13 @@ jobs:
           key: Library-Android-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}
           restore-keys: Library-Android-
 
-      - name: Testes EditMode e PlayMode
+      # Só EditMode na nuvem: o Editor headless às vezes trava (segfault 139) ao recarregar scripts
+      # para entrar em PlayMode, antes de qualquer teste rodar. PlayMode roda no Unity local (Tools/run-tests.ps1).
+      - name: Testes EditMode
         if: steps.check.outputs.ok == 'true'
         uses: game-ci/unity-test-runner@v4
         with:
-          testMode: all
+          testMode: editmode
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Resultados Unity
 
