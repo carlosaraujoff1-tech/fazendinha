@@ -46,6 +46,7 @@ Jogo mobile 3D estilizado, **paisagem** (decisão do dono, substitui o "retrato"
 | Configurar projeto | Windows | `.\Tools\setup-project.ps1` |
 | Todos os testes | Windows | `.\Tools\run-tests.ps1` (`-Platform EditMode|PlayMode`) |
 | APK debug | Windows | `.\Tools\build-android-debug.ps1 [-Install]` |
+| APK na nuvem | GitHub Actions | `.github/workflows/build-android.yml` → Release `apk-latest` (guia: `Docs/build-na-nuvem.md`) |
 
 Os scripts acham o Unity por `$env:UNITY_PATH` ou pelo Unity Hub (versão de `ProjectSettings/ProjectVersion.txt`).
 Fechar o Editor antes de rodar scripts em batchmode.

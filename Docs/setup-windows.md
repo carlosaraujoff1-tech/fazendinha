@@ -1,4 +1,7 @@
-# Preparar o PC (Windows) e o celular — Etapa 0
+# Alternativa: Unity no PC (Windows) e celular via USB
+
+> **Caminho recomendado agora:** `Docs/build-na-nuvem.md` (sem instalar o Editor). Este guia é para quando
+> você quiser abrir o projeto no Unity do PC.
 
 ## 1. Programas (uma vez só)
 1. **Git for Windows**: <https://git-scm.com/download/win>. Já vem com o Git LFS. Depois, no PowerShell:
@@ -26,7 +29,7 @@ cd fazendinha
 2. Se o Hub avisar que a versão é diferente (o projeto pede `6000.3.0f1`), escolha **a sua 6000.3.x** e confirme.
 3. Espere importar. Na primeira vez demora alguns minutos e baixa os pacotes.
 4. Se aparecer **"Enable new Input System backends?" / reiniciar**, aceite.
-5. No menu, clique em **Fazenda > Configurar projeto (Etapa 0)**.
+5. No menu, clique em **Fazenda > Configurar projeto (Etapa 0)** (gera também a cena `Main`).
 6. Feche o Unity. Os scripts abaixo rodam o Unity em segundo plano e precisam do Editor fechado.
 
 ## 4. Rodar os testes e configurar por linha de comando
@@ -52,8 +55,7 @@ arquivos `TestResults\EditMode.log` / `PlayMode.log`.
 .\Tools\build-android-debug.ps1 -Install
 ```
 A primeira build IL2CPP demora de 10 a 20 minutos. No fim, o app **Fazenda & Mercadinho** abre no
-celular: uma tela verde com o texto
-"Etapa 0 · Core OK (custo(1) = 115)" e o modelo do aparelho.
+celular, em paisagem, na fazenda (gray box).
 
 ## 7. Depois de tudo funcionar, commitar o que o Unity gerou
 ```powershell
