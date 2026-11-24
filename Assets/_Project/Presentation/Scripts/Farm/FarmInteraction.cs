@@ -36,7 +36,10 @@ namespace Game.Presentation.Farm
         private void FitCamera()
         {
             var b = farmView.Bounds();
-            cameraController.SetBounds(new Vector2(b.xMin, b.yMin - 2f), new Vector2(b.xMax, b.yMax + 2f));
+            var area = FindFirstObjectByType<AreaSwitcher>();
+            var rect = Rect.MinMaxRect(b.xMin, b.yMin - 2f, b.xMax, b.yMax + 2f);
+            if (area != null) area.SetBounds(GameArea.Farm, rect);
+            else cameraController.SetBounds(rect.min, rect.max);
         }
 
         private void OnTapped(Vector2 screen)

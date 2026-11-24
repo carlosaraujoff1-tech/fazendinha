@@ -2,12 +2,15 @@ using System.Linq;
 using System.Text;
 using Game.Core.Display;
 using Game.Core.Farm;
+using Game.Core.Store;
+using Game.Presentation.Controls;
+using Game.Presentation.Store;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Game.Presentation.UI
 {
-    /// <summary>HUD gray box: moedas, gemas, meta, resumo do armazém e compra de parcela.</summary>
+    /// <summary>HUD gray box: moedas, meta, abas Fazenda/Loja e a barra de ações de cada área.</summary>
     public sealed class HudController : MonoBehaviour
     {
         [SerializeField] private float refreshSeconds = 0.25f;
@@ -16,6 +19,11 @@ namespace Game.Presentation.UI
         private Text _goal;
         private Text _warehouse;
         private Button _buyPlot;
+        private Button _scan;
+        private Button _furniture;
+        private Button _tabFarm;
+        private Button _tabStore;
+        private AreaSwitcher _area;
         private float _nextRefresh;
         private readonly StringBuilder _sb = new StringBuilder(256);
 
@@ -28,13 +36,27 @@ namespace Game.Presentation.UI
             _goal = UiFactory.Label("Goal", top.transform, "", 34, TextAnchor.MiddleRight);
             ((RectTransform)_goal.transform).Anchor(new Vector2(0.5f, 0), new Vector2(0.96f, 1));
 
-            var bottom = UiFactory.Panel("BottomBar", transform, UiFactory.PanelColor);
-            ((RectTransform)bottom.transform).Anchor(new Vector2(0, 0), new Vector2(1, 0.11f));
-            _warehouse = UiFactory.Label("Warehouse", bottom.transform, "", 34, TextAnchor.MiddleLeft);
-            ((RectTransform)_warehouse.transform).Anchor(new Vector2(0.03f, 0), new Vector2(0.62f, 1));
-            _buyPlot = UiFactory.MakeButton("BuyPlot", bottom.transform, "", () => GameRoot.Instance.Execute(new BuyPlotCommand()), 36);
-            ((RectTransform)_buyPlot.transform).Anchor(new Vector2(0.64f, 0.15f), new Vector2(0.97f, 0.85f));
+            // Abas (as 5 da UI final chegam na Etapa 5)
+            _area = FindFirstObjectByType<AreaSwitcher>();
+            var tabs = UiFactory.Panel("Tabs", transform, new Color(0, 0, 0, 0.8f));
+            ((RectTransform)tabs.transform).Anchor(new Vector2(0, 0), new Vector2(1, 0.07f));
+            _tabFarm = UiFactory.MakeButton("TabFarm", tabs.transform, "Fazenda", () => _area.Show(GameArea.Farm), 40);
+            ((RectTransform)_tabFarm.transform).Anchor(new Vector2(0.02f, 0.1f), new Vector2(0.49f, 0.9f));
+            _tabStore = UiFactory.MakeButton("TabStore", tabs.transform, "Mercadinho", () => _area.Show(GameArea.Store), 40);
+            ((RectTransform)_tabStore.transform).Anchor(new Vector2(0.51f, 0.1f), new Vector2(0.98f, 0.9f));
 
+            var bottom = UiFactory.Panel("ActionBar", transform, UiFactory.PanelColor);
+            ((RectTransform)bottom.transform).Anchor(new Vector2(0, 0.07f), new Vector2(1, 0.16f));
+            _warehouse = UiFactory.Label("Info", bottom.transform, "", 32, TextAnchor.MiddleLeft);
+            ((RectTransform)_warehouse.transform).Anchor(new Vector2(0.03f, 0), new Vector2(0.62f, 1));
+            _buyPlot = UiFactory.MakeButton("BuyPlot", bottom.transform, "", () => GameRoot.Instance.Execute(new BuyPlotCommand()), 34);
+            ((RectTransform)_buyPlot.transform).Anchor(new Vector2(0.64f, 0.12f), new Vector2(0.97f, 0.88f));
+            _scan = UiFactory.MakeButton("Scan", bottom.transform, "Passar item", StoreInteraction.Scan, 34);
+            ((RectTransform)_scan.transform).Anchor(new Vector2(0.64f, 0.12f), new Vector2(0.97f, 0.88f));
+            _furniture = UiFactory.MakeButton("Furniture", bottom.transform, "+ Móvel", () => FindFirstObjectByType<StoreMenus>()?.OpenFurniture(), 34);
+            ((RectTransform)_furniture.transform).Anchor(new Vector2(0.42f, 0.12f), new Vector2(0.62f, 0.88f));
+
+            if (_area != null) _area.Changed += _ => Refresh();
             Refresh();
         }
 
@@ -52,6 +74,18 @@ namespace Game.Presentation.UI
             _coins.text = $"Moedas {DisplayFormat.Coins(s.Wallet.Coins)}   Gemas {s.Wallet.Gems}";
             // Metas de verdade (dados) chegam na Etapa 5; por enquanto mostra o progresso de colheitas.
             _goal.text = $"Nível {s.Progress.Level} · Colheitas {s.Stats.CropsHarvested}";
+
+            bool inStore = _area != null && _area.Current == GameArea.Store;
+            _buyPlot.gameObject.SetActive(!inStore);
+            _scan.gameObject.SetActive(inStore);
+            _furniture.gameObject.SetActive(inStore);
+            ((Image)_tabFarm.targetGraphic).color = inStore ? UiFactory.ButtonDisabled : UiFactory.ButtonColor;
+            ((Image)_tabStore.targetGraphic).color = inStore ? UiFactory.ButtonColor : UiFactory.ButtonDisabled;
+            if (inStore)
+            {
+                RefreshStore(root);
+                return;
+            }
 
             _sb.Clear();
             _sb.Append("Armazém: ");
@@ -73,6 +107,21 @@ namespace Game.Presentation.UI
             long cost = FarmRules.NextPlotCost(s, economy);
             UiFactory.SetButton(_buyPlot, atMax ? "Máx. parcelas" : $"+ Parcela ({DisplayFormat.Coins(cost)})",
                 !atMax && s.Wallet.Coins >= cost);
+        }
+    
+        private void RefreshStore(GameRoot root)
+        {
+            var store = root.State.Store;
+            int queued = 0, shopping = 0;
+            foreach (var c in store.Customers)
+            {
+                if (c.Phase == CustomerPhase.Queued) queued++;
+                else shopping++;
+            }
+            var front = StoreRules.FrontOfQueue(store);
+            string next = front != null ? $"  ·  item {front.ScannedLines + 1}/{front.Cart.Count}" : "";
+            _warehouse.text = $"Fila {queued}{next}\nComprando {shopping}  ·  Vendas {DisplayFormat.Coins(root.State.Stats.SalesRevenue)}";
+            UiFactory.SetButton(_scan, "Passar item", front != null);
         }
     }
 }

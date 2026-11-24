@@ -2,6 +2,7 @@ using System.IO;
 using Game.Presentation;
 using Game.Presentation.Controls;
 using Game.Presentation.Farm;
+using Game.Presentation.Store;
 using Game.Presentation.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -45,6 +46,8 @@ namespace Game.Editor
             rig.transform.position = new Vector3(0, 0, -3f);
             var cameraController = rig.AddComponent<TouchCameraController>();
             SetRef(cameraController, "targetCamera", camera);
+            var areaSwitcher = rig.AddComponent<AreaSwitcher>();
+            SetRef(areaSwitcher, "cameraController", cameraController);
 
             // Luz
             var lightGo = new GameObject("Sun");
@@ -73,6 +76,13 @@ namespace Game.Editor
             SetRef(interaction, "cameraController", cameraController);
             SetRef(interaction, "farmView", farmView);
 
+            // Mercadinho (à direita da fazenda)
+            var storeGo = new GameObject("Store");
+            storeGo.transform.position = new Vector3(24, 0, 0);
+            storeGo.AddComponent<StoreView>();
+            var storeInteraction = storeGo.AddComponent<StoreInteraction>();
+            SetRef(storeInteraction, "cameraController", cameraController);
+
             // UI
             var canvasGo = new GameObject("Canvas");
             var canvas = canvasGo.AddComponent<Canvas>();
@@ -89,6 +99,7 @@ namespace Game.Editor
             // Ordem dos irmãos = ordem de desenho: HUD, menus por cima, toast por último.
             FullRect("Hud", safe).gameObject.AddComponent<HudController>();
             FullRect("PlantMenu", safe).gameObject.AddComponent<PlantMenu>();
+            FullRect("StoreMenus", safe).gameObject.AddComponent<StoreMenus>();
             FullRect("Toast", safe).gameObject.AddComponent<Toast>();
 
             var es = new GameObject("EventSystem");
