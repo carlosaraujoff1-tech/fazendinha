@@ -28,8 +28,12 @@ Jogo mobile 3D estilizado, retrato, Unity 6.3 LTS + URP, C#, IL2CPP/ARM64. **Só
 | `Game.Tests.EditMode` / `.PlayMode` | `Assets/_Project/Tests/*` | todas |
 
 - Um único `GameState` serializável; tempo por `IClock` (UTC); ações = comandos validados; domínio emite eventos.
-- Testes de C# puro ficam em `Assets/_Project/Tests/EditMode/Core/` — **sem UnityEngine** — porque
-  também rodam fora do Unity pelo espelho `Tools/CoreTests/CoreTests.csproj` (LangVersion 9 = C# do Unity).
+- Código C# puro: `Assets/_Project/Core/**` e `Assets/_Project/Services/FileSystem/**` (o teste de arquitetura garante).
+- Testes de C# puro ficam em `Assets/_Project/Tests/EditMode/Core/` e `.../EditMode/Services/`, **sem UnityEngine**,
+  porque também rodam fora do Unity pelo espelho `Tools/CoreTests/` (netstandard2.1 + LangVersion 9 = perfil do Unity).
+  Arquivo novo em pasta pura entra no espelho automaticamente (glob). Cobertura mínima: 80% de linhas.
+- `Game.Core` só pode referenciar `Newtonsoft.Json.dll` (save). Tempos sempre em `long` ms UTC.
+- Ações do jogador: `ICommand` + `ICommandHandler<T>` (Validate sem efeito / Apply) registrados no `CommandExecutor`.
 - Packs 3D: originais em `C:\packsgame` (**nunca editar/apagar**). Importar só na etapa em que forem usados,
   para `Assets/ThirdParty/<Pack>/`, sempre envolvidos por prefabs próprios em `Assets/_Project/Presentation/Prefabs/`.
   Inventário: `Docs/assets-inventory.md`.
@@ -46,6 +50,7 @@ Os scripts acham o Unity por `$env:UNITY_PATH` ou pelo Unity Hub (versão de `Pr
 Fechar o Editor antes de rodar scripts em batchmode.
 
 ## Ambiente de desenvolvimento
+Jogo de **uso pessoal**: o dono autorizou seguir as etapas sem aprovação intermediária até a primeira build.
 O Claude trabalha numa sessão na nuvem (Linux, sem Unity): escreve o código, roda os testes do Core
 com dotnet e faz push para `github.com/carlosaraujoff1-tech/fazendinha`. Tudo que precisa do Editor
 Unity (testes EditMode/PlayMode, build, celular) o dono roda no Windows com os scripts acima e devolve a saída.
