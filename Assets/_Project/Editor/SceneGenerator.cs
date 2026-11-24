@@ -100,6 +100,7 @@ namespace Game.Editor
             FullRect("Hud", safe).gameObject.AddComponent<HudController>();
             FullRect("PlantMenu", safe).gameObject.AddComponent<PlantMenu>();
             FullRect("StoreMenus", safe).gameObject.AddComponent<StoreMenus>();
+            FullRect("WelcomeBack", safe).gameObject.AddComponent<WelcomeBackPanel>();
             FullRect("Toast", safe).gameObject.AddComponent<Toast>();
 
             var es = new GameObject("EventSystem");

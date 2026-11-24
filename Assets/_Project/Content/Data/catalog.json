@@ -57,6 +57,7 @@
     "minUnitsPerItem": 1,
     "maxUnitsPerItem": 3,
     "farmSealBonus": 0.05,
+    "substituteAcceptance": 0.6,
     "discountQuantityFactor": 0.5,
     "queueDrainPerCustomerAhead": 0.25,
     "maxCatchUpSeconds": 10,

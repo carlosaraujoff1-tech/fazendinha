@@ -122,6 +122,7 @@ namespace Game.Core.State
         public long UnitsSold { get; set; }
         public long SalesRevenue { get; set; }
         public long SupplierSpent { get; set; }
+        public long CoinsInvested { get; set; }
         public long SalariesPaid { get; set; }
         public long OfflineMsIgnored { get; set; }
     }

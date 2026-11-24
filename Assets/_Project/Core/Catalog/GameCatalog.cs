@@ -169,6 +169,7 @@ namespace Game.Core.Catalog
             if (store.MinUnitsPerItem < 1 || store.MaxUnitsPerItem < store.MinUnitsPerItem) errors.Add("Faixa de unidades por item inválida.");
             if (store.MaxCatchUpSeconds <= 0) errors.Add("MaxCatchUpSeconds <= 0.");
             if (store.MaxPriceFactor < 1) errors.Add("MaxPriceFactor < 1.");
+            if (store.SubstituteAcceptance < 0 || store.SubstituteAcceptance > 1) errors.Add("SubstituteAcceptance fora de [0, 1].");
 
             var staffMap = new Dictionary<string, StaffDef>();
             foreach (var s in staff ?? Enumerable.Empty<StaffDef>())

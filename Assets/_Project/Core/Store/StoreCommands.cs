@@ -112,6 +112,7 @@ namespace Game.Core.Store
             var furniture = ctx.Catalog.GetFurniture(c.FurnitureId);
             long cost = StoreRules.FurnitureCost(ctx.State, furniture, ctx.Catalog.Economy);
             if (cost > 0) ctx.Wallet.TrySpendCoins(cost, "movel:" + furniture.Id);
+            ctx.State.Stats.CoinsInvested += cost;
             var bought = ctx.State.Store.FurnitureBought;
             bought[furniture.Id] = bought.TryGetValue(furniture.Id, out int n) ? n + 1 : 1;
             ctx.State.Store.Shelves.Add(new ShelfState { FurnitureId = furniture.Id });

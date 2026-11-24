@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using Game.Core.Catalog;
 using Game.Core.Display;
+using Game.Core.Staff;
 using Game.Core.Store;
+using Game.Core.Supplier;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -160,11 +162,48 @@ namespace Game.Presentation.UI
 
         // ---------- Móveis ----------
 
-        public void OpenFurniture() => Show("Comprar móvel", BuildFurniture);
+        public void OpenFurniture() => Show("Melhorias da loja", BuildFurniture);
+
+        // ---------- Fornecedor ----------
+
+        public void OpenSupplier() => Show("Fornecedor (entrega em ~2 min)", BuildSupplier);
+
+        private void BuildSupplier()
+        {
+            var root = GameRoot.Instance;
+            var economy = root.Catalog.Economy;
+            long now = root.NowMs;
+            foreach (var order in root.State.Supplier.Orders)
+            {
+                string name = root.Catalog.TryGetProduct(order.ProductId, out var op) ? op.Name : order.ProductId;
+                Info($"A caminho: {order.Units} {name} · chega em {DisplayFormat.Duration(order.DeliverAtMs - now)}");
+            }
+            foreach (var product in root.Catalog.Products)
+            {
+                var p = product;
+                long unit = SupplierRules.UnitPrice(p, economy);
+                int stock = root.Context.Warehouse.Count(p.Id, now);
+                PairRow($"{p.Name} x10 · {DisplayFormat.Coins(unit * 10)}  (armazém {stock})",
+                    () => root.Execute(new BuyFromSupplierCommand(p.Id, 10)), root.State.Wallet.Coins >= unit * 10,
+                    $"x1 · {unit}  (P {p.ReferencePrice})",
+                    () => root.Execute(new BuyFromSupplierCommand(p.Id, 1)));
+            }
+        }
 
         private void BuildFurniture()
         {
             var root = GameRoot.Instance;
+            foreach (var staff in root.Catalog.Staff)
+            {
+                var s = staff;
+                int hired = StaffRules.CountOf(root.State.Staff, s.Id);
+                bool active = root.State.Staff.Employees.Exists(e => e.TypeId == s.Id && e.Active);
+                string status = hired == 0 ? "" : active ? " · trabalhando" : " · PARADO (sem salário)";
+                Row($"Contratar {s.Name} · {DisplayFormat.Coins(s.HireCost)} + {s.Salary}/10 min ({hired}/{s.MaxHired}){status}",
+                    () => root.Execute(new HireCommand(s.Id)),
+                    hired < s.MaxHired && root.State.Wallet.Coins >= s.HireCost);
+            }
+
             bool atMax = root.State.Store.Shelves.Count >= root.Catalog.Store.MaxFurniture;
             if (atMax) Info("Loja cheia");
             foreach (var furniture in root.Catalog.Furniture)

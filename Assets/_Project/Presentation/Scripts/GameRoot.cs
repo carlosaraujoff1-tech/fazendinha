@@ -38,6 +38,9 @@ namespace Game.Presentation
         public GameState State => Context.State;
         public long NowMs => Context.NowMs;
 
+        /// <summary>Resumo do tempo fora calculado ao abrir o jogo (consumido pela UI).</summary>
+        public OfflineReturned? PendingWelcome { get; set; }
+
         /// <summary>Disparado a cada comando rejeitado (para a UI mostrar o motivo).</summary>
         public event Action<string> CommandFailed;
 
@@ -58,7 +61,8 @@ namespace Game.Presentation
             GameState state = LoadOrCreate(store, catalog, clock);
             Context = new GameContext(state, catalog, clock, new EventBus());
             Commands = GameCommands.CreateExecutor(Context);
-            GameSimulation.Tick(Context);
+            // O primeiro Tick acontece antes da UI existir: guarda o resumo para a tela "Bem-vindo de volta".
+            using (Context.Events.Subscribe<OfflineReturned>(e => PendingWelcome = e)) GameSimulation.Tick(Context);
             _nextAutosave = Time.unscaledTime + autosaveIntervalSeconds;
         }
 

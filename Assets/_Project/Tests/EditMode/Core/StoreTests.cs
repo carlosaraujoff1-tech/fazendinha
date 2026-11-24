@@ -173,9 +173,9 @@ namespace Game.Tests.Core
             Assert.Greater(_ctx.State.Wallet.Coins, coinsBefore);
             Assert.AreEqual(_ctx.State.Wallet.Coins - coinsBefore, _ctx.State.Stats.SalesRevenue);
             Assert.IsTrue(left.Where(l => l.Reason == LeaveReason.Paid).All(l => l.Paid > 0));
-            // Querem batata, tomate, queijo... que não estão na loja: toda categoria tem algo, então substituem.
+            // Querem batata, tomate, queijo... que não estão na loja: às vezes aceitam um substituto, às vezes não.
             Assert.IsTrue(picks.Any(p => p.Substitute));
-            Assert.AreEqual(0, _ctx.State.Stats.ItemsMissing);
+            Assert.Greater(_ctx.State.Stats.ItemsMissing, 0);
         }
 
         [Test]
@@ -220,6 +220,7 @@ namespace Game.Tests.Core
         public void MissingItem_SubstituteFromSameCategory()
         {
             NoMoreSpawns();
+            _catalog.Store.SubstituteAcceptance = 1; // catálogo carregado só para este teste
             AddToWarehouse("cenoura", 10);
             _exec.Execute(new RestockCommand(0, "cenoura", 10));
             var picks = new List<CustomerPickedItem>();
@@ -233,6 +234,19 @@ namespace Game.Tests.Core
             Assert.IsTrue(picks[0].Substitute);
             Assert.AreEqual(1, _ctx.State.Stats.ItemsMissing, "queijo: geladeira vazia e sem substituto");
             Assert.AreEqual(CustomerPhase.Queued, c.Phase);
+        }
+
+        [Test]
+        public void MissingItem_SubstituteCanBeRefused()
+        {
+            NoMoreSpawns();
+            _catalog.Store.SubstituteAcceptance = 0;
+            AddToWarehouse("cenoura", 10);
+            _exec.Execute(new RestockCommand(0, "cenoura", 10));
+            AddCustomer("gourmet", "alface");
+            Run(6);
+            Assert.AreEqual(1, _ctx.State.Stats.ItemsMissing);
+            Assert.AreEqual(10, StoreRules.Units(Store.Shelves[0], _clock.UtcNowMs));
         }
 
         [Test]

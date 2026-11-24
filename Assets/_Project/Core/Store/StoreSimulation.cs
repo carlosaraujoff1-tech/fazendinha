@@ -208,6 +208,7 @@ namespace Game.Core.Store
                 shelfIndex = FindShelf(store, s => s.ProductId != null && s.ProductId != wanted.Id &&
                     catalog.TryGetProduct(s.ProductId, out var p) && p.CategoryId == wanted.CategoryId, t);
                 substitute = shelfIndex >= 0;
+                if (substitute && !rng.Chance(config.SubstituteAcceptance)) shelfIndex = -1;
             }
             if (shelfIndex < 0)
             {

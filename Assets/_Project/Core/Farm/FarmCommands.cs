@@ -144,6 +144,7 @@ namespace Game.Core.Farm
         {
             long cost = FarmRules.NextPlotCost(ctx.State, ctx.Catalog.Economy);
             if (cost > 0) ctx.Wallet.TrySpendCoins(cost, "parcela");
+            ctx.State.Stats.CoinsInvested += cost;
             ctx.State.Farm.PlotsBought++;
             ctx.State.Farm.Plots.Add(new PlotState());
             int index = ctx.State.Farm.Plots.Count - 1;

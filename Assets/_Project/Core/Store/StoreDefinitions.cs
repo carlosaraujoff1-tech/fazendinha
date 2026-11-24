@@ -46,6 +46,8 @@ namespace Game.Core.Store
         public int MinUnitsPerItem { get; set; } = 1;
         public int MaxUnitsPerItem { get; set; } = 3;
         public double FarmSealBonus { get; set; } = 0.05;
+        /// <summary>Chance de aceitar um substituto da mesma categoria quando falta o item desejado.</summary>
+        public double SubstituteAcceptance { get; set; } = 0.6;
         public double DiscountQuantityFactor { get; set; } = 0.5;
         /// <summary>Paciência na fila cai (1 + isto × clientes à frente) por segundo.</summary>
         public double QueueDrainPerCustomerAhead { get; set; } = 0.25;

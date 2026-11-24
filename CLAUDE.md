@@ -42,6 +42,7 @@ Jogo mobile 3D estilizado, **paisagem** (decisão do dono, substitui o "retrato"
 | O quê | Onde | Comando |
 |---|---|---|
 | Testes Core (C# puro) | nuvem/Linux | `Tools/run-core-tests.sh` (`--coverage` para cobertura) |
+| Simulador de balanceamento | nuvem/Linux | `Tools/run-balance.sh` → `Docs/balance/` |
 | Configurar projeto | Windows | `.\Tools\setup-project.ps1` |
 | Todos os testes | Windows | `.\Tools\run-tests.ps1` (`-Platform EditMode|PlayMode`) |
 | APK debug | Windows | `.\Tools\build-android-debug.ps1 [-Install]` |

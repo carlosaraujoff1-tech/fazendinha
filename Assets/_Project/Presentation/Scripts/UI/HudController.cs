@@ -21,6 +21,7 @@ namespace Game.Presentation.UI
         private Button _buyPlot;
         private Button _scan;
         private Button _furniture;
+        private Button _supplier;
         private Button _tabFarm;
         private Button _tabStore;
         private AreaSwitcher _area;
@@ -46,9 +47,11 @@ namespace Game.Presentation.UI
             _tabStore = UiFactory.MakeButton("TabStore", bottom.transform, "Mercadinho", () => _area.Show(GameArea.Store), 36);
             ((RectTransform)_tabStore.transform).Anchor(new Vector2(0.14f, 0.12f), new Vector2(0.27f, 0.88f));
             _warehouse = UiFactory.Label("Info", bottom.transform, "", 30, TextAnchor.MiddleLeft);
-            ((RectTransform)_warehouse.transform).Anchor(new Vector2(0.29f, 0), new Vector2(0.64f, 1));
-            _furniture = UiFactory.MakeButton("Furniture", bottom.transform, "+ Móvel", () => FindFirstObjectByType<StoreMenus>()?.OpenFurniture(), 32);
-            ((RectTransform)_furniture.transform).Anchor(new Vector2(0.65f, 0.12f), new Vector2(0.79f, 0.88f));
+            ((RectTransform)_warehouse.transform).Anchor(new Vector2(0.29f, 0), new Vector2(0.51f, 1));
+            _furniture = UiFactory.MakeButton("Upgrades", bottom.transform, "Melhorias", () => FindFirstObjectByType<StoreMenus>()?.OpenFurniture(), 30);
+            ((RectTransform)_furniture.transform).Anchor(new Vector2(0.66f, 0.12f), new Vector2(0.79f, 0.88f));
+            _supplier = UiFactory.MakeButton("Supplier", bottom.transform, "Fornecedor", () => FindFirstObjectByType<StoreMenus>()?.OpenSupplier(), 30);
+            ((RectTransform)_supplier.transform).Anchor(new Vector2(0.52f, 0.12f), new Vector2(0.65f, 0.88f));
             _buyPlot = UiFactory.MakeButton("BuyPlot", bottom.transform, "", () => GameRoot.Instance.Execute(new BuyPlotCommand()), 32);
             ((RectTransform)_buyPlot.transform).Anchor(new Vector2(0.80f, 0.12f), new Vector2(0.99f, 0.88f));
             _scan = UiFactory.MakeButton("Scan", bottom.transform, "Passar item", StoreInteraction.Scan, 32);
@@ -77,6 +80,7 @@ namespace Game.Presentation.UI
             _buyPlot.gameObject.SetActive(!inStore);
             _scan.gameObject.SetActive(inStore);
             _furniture.gameObject.SetActive(inStore);
+            _supplier.gameObject.SetActive(inStore);
             ((Image)_tabFarm.targetGraphic).color = inStore ? UiFactory.ButtonDisabled : UiFactory.ButtonColor;
             ((Image)_tabStore.targetGraphic).color = inStore ? UiFactory.ButtonColor : UiFactory.ButtonDisabled;
             if (inStore)
