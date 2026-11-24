@@ -1,0 +1,104 @@
+# Testes + APK de depuração Android na nuvem (GameCI).
+# - "core-tests" roda sempre (C# puro, sem Unity, sem segredos).
+# - "unity" só roda quando os segredos UNITY_LICENSE, UNITY_EMAIL e UNITY_PASSWORD existem
+#   (Settings > Secrets and variables > Actions). Passo a passo: Docs/build-na-nuvem.md
+# - O APK fica numa Release "apk-latest" (link direto para baixar no celular).
+name: Build Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: build-android
+  cancel-in-progress: true
+
+jobs:
+  core-tests:
+    name: Testes do Core (dotnet)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Testes + cobertura (mínimo 80%)
+        run: bash Tools/run-core-tests.sh --coverage
+
+  unity:
+    name: Testes Unity + APK
+    needs: core-tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+    steps:
+      - name: Segredos da Unity configurados?
+        id: check
+        run: |
+          if [ -z "$UNITY_LICENSE" ] || [ -z "$UNITY_EMAIL" ] || [ -z "$UNITY_PASSWORD" ]; then
+            echo "Faltam os segredos da Unity: build pulada. Veja Docs/build-na-nuvem.md" >> "$GITHUB_STEP_SUMMARY"
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Liberar espaço em disco (imagem Android do Unity é grande)
+        if: steps.check.outputs.ok == 'true'
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          android: false
+
+      - uses: actions/checkout@v4
+        if: steps.check.outputs.ok == 'true'
+        with:
+          lfs: true
+
+      - uses: actions/cache@v4
+        if: steps.check.outputs.ok == 'true'
+        with:
+          path: Library
+          key: Library-Android-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: Library-Android-
+
+      - name: Testes EditMode e PlayMode
+        if: steps.check.outputs.ok == 'true'
+        uses: game-ci/unity-test-runner@v4
+        with:
+          testMode: all
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Resultados Unity
+
+      - name: Build APK (configura o projeto e gera a cena antes)
+        if: steps.check.outputs.ok == 'true'
+        uses: game-ci/unity-builder@v4
+        with:
+          targetPlatform: Android
+          buildMethod: Game.Editor.BuildAndroid.BuildDebugApk
+          allowDirtyBuild: true
+
+      - name: Guardar APK como artefato
+        if: steps.check.outputs.ok == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-debug
+          path: Builds/Android/*.apk
+          if-no-files-found: error
+
+      - name: Publicar APK (link para o celular)
+        if: steps.check.outputs.ok == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-latest
+          name: APK de teste (último build)
+          prerelease: true
+          make_latest: false
+          files: Builds/Android/*.apk
+          body: |
+            Build automática do commit ${{ github.sha }}.
+            No celular: toque no arquivo .apk abaixo para baixar e instalar.
