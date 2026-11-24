@@ -84,6 +84,9 @@ namespace Game.Core.Catalog
             if (economy.SupplierPriceFactor <= 0) errors.Add("Fator de preço do fornecedor <= 0.");
             if (economy.WaterTimeReduction < 0 || economy.WaterTimeReduction >= 1) errors.Add("Redução por rega fora de [0, 1).");
             if (economy.OfflineFarmCapSeconds < 0) errors.Add("Limite offline negativo.");
+            if (economy.InitialPlots < 1) errors.Add("Fazenda precisa de pelo menos 1 parcela inicial.");
+            if (economy.MaxPlots < economy.InitialPlots) errors.Add("Máximo de parcelas menor que o inicial.");
+            if (economy.PlotBaseCost < 0) errors.Add("Custo de parcela negativo.");
 
             if (errors.Count > 0) throw new CatalogException(errors);
             return new GameCatalog(productMap, cropMap, economy);

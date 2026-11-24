@@ -3,9 +3,10 @@ namespace Game.Core.Catalog
     /// <summary>Produto vendável (hortifruti, laticínios, mercearia...). Imutável depois de criado.</summary>
     public sealed class ProductDef
     {
-        public ProductDef(string id, string categoryId, long referencePrice, int shelfLifeSeconds)
+        public ProductDef(string id, string categoryId, long referencePrice, int shelfLifeSeconds, string name = null)
         {
             Id = id;
+            Name = string.IsNullOrEmpty(name) ? id : name;
             CategoryId = categoryId;
             ReferencePrice = referencePrice;
             ShelfLifeSeconds = shelfLifeSeconds;
@@ -13,6 +14,9 @@ namespace Game.Core.Catalog
 
         /// <summary>ID de texto estável (ex.: "alface"). Nunca muda depois de publicado.</summary>
         public string Id { get; }
+
+        /// <summary>Nome de exibição (pt-BR por enquanto; localização na Etapa 5).</summary>
+        public string Name { get; }
 
         /// <summary>Categoria da prateleira (ex.: "hortifruti").</summary>
         public string CategoryId { get; }
@@ -29,9 +33,10 @@ namespace Game.Core.Catalog
     /// <summary>Cultura plantável. Colher gera <see cref="Yield"/> unidades de <see cref="ProductId"/>.</summary>
     public sealed class CropDef
     {
-        public CropDef(string id, string productId, int growSeconds, long seedCost, int yield, int unlockLevel = 1)
+        public CropDef(string id, string productId, int growSeconds, long seedCost, int yield, int unlockLevel = 1, string name = null)
         {
             Id = id;
+            Name = string.IsNullOrEmpty(name) ? id : name;
             ProductId = productId;
             GrowSeconds = growSeconds;
             SeedCost = seedCost;
@@ -40,6 +45,7 @@ namespace Game.Core.Catalog
         }
 
         public string Id { get; }
+        public string Name { get; }
         public string ProductId { get; }
         public int GrowSeconds { get; }
         public long SeedCost { get; }
@@ -58,5 +64,10 @@ namespace Game.Core.Catalog
         public double WaterTimeReduction { get; set; } = 0.25;
         public int OfflineFarmCapSeconds { get; set; } = 4 * 3600;
         public int SalaryIntervalSeconds { get; set; } = 600;
+
+        // Fazenda
+        public int InitialPlots { get; set; } = 4;
+        public int MaxPlots { get; set; } = 20;
+        public long PlotBaseCost { get; set; } = 50;
     }
 }

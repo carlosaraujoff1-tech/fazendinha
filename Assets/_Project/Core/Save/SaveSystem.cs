@@ -110,6 +110,10 @@ namespace Game.Core.Save
             if (s.Wallet == null) throw new SaveFormatException("Save sem carteira.");
             if (s.Warehouse == null) throw new SaveFormatException("Save sem armazém.");
             if (s.Stats == null) s.Stats = new StatsState();
+            if (s.Progress == null) s.Progress = new ProgressState();
+            if (s.Farm == null || s.Farm.Plots == null) throw new SaveFormatException("Save sem fazenda.");
+            foreach (var plot in s.Farm.Plots)
+                if (plot == null) throw new SaveFormatException("Parcela nula no save.");
             if (s.Wallet.Coins < 0 || s.Wallet.Gems < 0) throw new SaveFormatException("Saldo negativo no save.");
             foreach (var lot in s.Warehouse)
             {

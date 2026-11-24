@@ -39,7 +39,7 @@ namespace Game.Core.Simulation
             if (catalog == null) throw new ArgumentNullException(nameof(catalog));
             if (clock == null) throw new ArgumentNullException(nameof(clock));
             long now = clock.UtcNowMs;
-            return new GameState
+            var state = new GameState
             {
                 CreatedAtMs = now,
                 LastTickMs = now,
@@ -49,6 +49,8 @@ namespace Game.Core.Simulation
                     Gems = catalog.Economy.StartingGems,
                 },
             };
+            for (int i = 0; i < catalog.Economy.InitialPlots; i++) state.Farm.Plots.Add(new PlotState());
+            return state;
         }
     }
 }

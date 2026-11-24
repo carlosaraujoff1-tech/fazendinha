@@ -24,6 +24,44 @@ namespace Game.Core.State
         public List<StockLot> Warehouse { get; set; } = new List<StockLot>();
 
         public StatsState Stats { get; set; } = new StatsState();
+
+        public FarmState Farm { get; set; } = new FarmState();
+
+        public ProgressState Progress { get; set; } = new ProgressState();
+    }
+
+    public sealed class FarmState
+    {
+        /// <summary>Parcelas; o índice na lista é o ID da parcela.</summary>
+        public List<PlotState> Plots { get; set; } = new List<PlotState>();
+
+        /// <summary>Quantas parcelas extras já foram compradas (n da curva de custo).</summary>
+        public int PlotsBought { get; set; }
+    }
+
+    public sealed class PlotState
+    {
+        /// <summary>Cultura plantada ou null se vazia.</summary>
+        public string CropId { get; set; }
+        public long PlantedAtMs { get; set; }
+        public long ReadyAtMs { get; set; }
+        public bool Watered { get; set; }
+
+        public bool IsEmpty => string.IsNullOrEmpty(CropId);
+
+        public void Clear()
+        {
+            CropId = null;
+            PlantedAtMs = 0;
+            ReadyAtMs = 0;
+            Watered = false;
+        }
+    }
+
+    public sealed class ProgressState
+    {
+        public int Level { get; set; } = 1;
+        public long Xp { get; set; }
     }
 
     public sealed class WalletState
@@ -66,5 +104,6 @@ namespace Game.Core.State
         public long CoinsEarned { get; set; }
         public long CoinsSpent { get; set; }
         public long UnitsExpired { get; set; }
+        public long CropsHarvested { get; set; }
     }
 }

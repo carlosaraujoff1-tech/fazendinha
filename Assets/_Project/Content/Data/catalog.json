@@ -1,0 +1,29 @@
+{
+  "economy": {
+    "startingCoins": 100,
+    "startingGems": 0,
+    "repeatableCostGrowth": 1.15,
+    "supplierPriceFactor": 0.8,
+    "supplierDeliverySeconds": 120,
+    "waterTimeReduction": 0.25,
+    "offlineFarmCapSeconds": 14400,
+    "salaryIntervalSeconds": 600,
+    "initialPlots": 4,
+    "maxPlots": 20,
+    "plotBaseCost": 50
+  },
+  "products": [
+    { "id": "alface",  "name": "Alface", "category": "hortifruti", "referencePrice": 10, "shelfLifeSeconds": 21600 },
+    { "id": "cenoura", "name": "Cenoura", "category": "hortifruti", "referencePrice": 14, "shelfLifeSeconds": 43200 },
+    { "id": "batata",  "name": "Batata", "category": "hortifruti", "referencePrice": 18, "shelfLifeSeconds": 86400 },
+    { "id": "tomate",  "name": "Tomate", "category": "hortifruti", "referencePrice": 24, "shelfLifeSeconds": 28800 },
+    { "id": "milho",   "name": "Milho", "category": "hortifruti", "referencePrice": 30, "shelfLifeSeconds": 43200 }
+  ],
+  "crops": [
+    { "id": "alface",  "name": "Alface", "product": "alface",  "growSeconds": 60,   "seedCost": 10, "yield": 4, "unlockLevel": 1 },
+    { "id": "cenoura", "name": "Cenoura", "product": "cenoura", "growSeconds": 180,  "seedCost": 18, "yield": 5, "unlockLevel": 1 },
+    { "id": "batata",  "name": "Batata", "product": "batata",  "growSeconds": 480,  "seedCost": 27, "yield": 6, "unlockLevel": 1 },
+    { "id": "tomate",  "name": "Tomate", "product": "tomate",  "growSeconds": 900,  "seedCost": 36, "yield": 6, "unlockLevel": 1 },
+    { "id": "milho",   "name": "Milho", "product": "milho",   "growSeconds": 1800, "seedCost": 60, "yield": 8, "unlockLevel": 5 }
+  ]
+}

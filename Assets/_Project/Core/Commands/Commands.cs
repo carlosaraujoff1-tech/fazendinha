@@ -35,6 +35,13 @@ namespace Game.Core.Commands
         public const string InsufficientStock = "insufficient_stock";
         public const string Locked = "locked";
         public const string InvalidState = "invalid_state";
+        public const string UnknownPlot = "unknown_plot";
+        public const string PlotOccupied = "plot_occupied";
+        public const string PlotEmpty = "plot_empty";
+        public const string NotReady = "not_ready";
+        public const string AlreadyReady = "already_ready";
+        public const string AlreadyWatered = "already_watered";
+        public const string MaxReached = "max_reached";
     }
 
     /// <summary>

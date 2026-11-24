@@ -13,6 +13,8 @@ namespace Game.Tests.Core
         [TestCase(100, 2, 132)]   // 132,25
         [TestCase(100, 10, 405)]  // 404,56
         [TestCase(0, 5, 0)]
+        [TestCase(50, 1, 58)]     // 57,5 (ponto flutuante: 57,4999…)
+        [TestCase(10, 1, 12)]     // 11,5
         public void RepeatableCost_FollowsFormula(long baseCost, int n, long expected)
         {
             Assert.AreEqual(expected, CostCurve.RepeatableCost(baseCost, n));

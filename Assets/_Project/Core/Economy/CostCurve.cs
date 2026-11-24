@@ -22,7 +22,9 @@ namespace Game.Core.Economy
 
             double cost = baseCost * Math.Pow(growth, purchasesSoFar);
             if (cost >= long.MaxValue) return long.MaxValue;
-            return (long)Math.Round(cost, MidpointRounding.AwayFromZero);
+            // Arredonda antes a 6 casas: 50 × 1,15 dá 57,4999999… em ponto flutuante e deve virar 58.
+            double cleaned = cost < 1e9 ? Math.Round(cost, 6) : cost;
+            return (long)Math.Round(cleaned, MidpointRounding.AwayFromZero);
         }
     }
 }
