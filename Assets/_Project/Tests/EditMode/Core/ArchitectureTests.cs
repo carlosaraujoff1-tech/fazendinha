@@ -35,18 +35,23 @@ namespace Game.Tests.Core
             string json = File.ReadAllText(Path.Combine(CoreDir, "Game.Core.asmdef"));
             StringAssert.IsMatch("\"noEngineReferences\"\\s*:\\s*true", json);
             StringAssert.IsMatch("\"references\"\\s*:\\s*\\[\\s*\\]", json);
+            // Única DLL externa permitida no Core: Newtonsoft (save).
+            StringAssert.IsMatch("\"precompiledReferences\"\\s*:\\s*\\[\\s*\"Newtonsoft\\.Json\\.dll\"\\s*\\]", json);
         }
 
-        [Test]
-        public void CoreSources_DoNotMentionUnityNamespaces()
+        // Pastas que precisam ser C# puro (também compiladas fora do Unity em Tools/CoreTests).
+        [TestCase("Core")]
+        [TestCase("Services/FileSystem")]
+        public void PureSources_DoNotMentionUnityNamespaces(string folder)
         {
             var forbidden = new Regex(@"\bUnity(Engine|Editor)\b");
-            string[] files = Directory.GetFiles(CoreDir, "*.cs", SearchOption.AllDirectories);
+            string dir = Path.Combine(FindProjectRoot(), "Assets", "_Project", folder);
+            string[] files = Directory.GetFiles(dir, "*.cs", SearchOption.AllDirectories);
             Assert.IsNotEmpty(files);
             foreach (string file in files)
             {
                 Assert.IsFalse(forbidden.IsMatch(File.ReadAllText(file)),
-                    $"{Path.GetFileName(file)} referencia UnityEngine/UnityEditor; Game.Core deve ser C# puro.");
+                    $"{Path.GetFileName(file)} referencia UnityEngine/UnityEditor; {folder} deve ser C# puro.");
             }
         }
     }

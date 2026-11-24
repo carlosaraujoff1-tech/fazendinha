@@ -1,0 +1,5 @@
+<!-- Impede o IL2CPP de remover tipos usados por reflexão (save JSON via Newtonsoft). -->
+<linker>
+    <assembly fullname="Game.Core" preserve="all" />
+    <assembly fullname="Game.Services" preserve="all" />
+</linker>
