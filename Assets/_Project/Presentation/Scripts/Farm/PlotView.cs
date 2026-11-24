@@ -16,6 +16,7 @@ namespace Game.Presentation.Farm
         private Transform _plant;
         private Renderer _plantRenderer;
         private Transform _readyMarker;
+        private GameObject _model;
         private string _shownCrop;
         private int _shownStage = -1;
         private bool _shownWet;
@@ -55,7 +56,7 @@ namespace Game.Presentation.Farm
 
             if (phase == PlotPhase.Empty)
             {
-                if (_shownStage != 0) { _plant.gameObject.SetActive(false); _readyMarker.gameObject.SetActive(false); }
+                if (_shownStage != 0) { _plant.gameObject.SetActive(false); _readyMarker.gameObject.SetActive(false); ClearModel(); }
                 _shownStage = 0;
                 _shownCrop = null;
                 return;
@@ -65,17 +66,14 @@ namespace Game.Presentation.Farm
             {
                 _plantRenderer.sharedMaterial = GrayboxMaterials.Get(GrayboxMaterials.ColorFor(plot.CropId));
                 _shownCrop = plot.CropId;
+                _shownStage = -1; // força trocar o modelo
             }
 
             int stage = FarmRules.VisualStage(plot, nowMs);
             if (stage != _shownStage)
             {
-                float h = 0.15f + 0.2f * stage;
-                float w = 0.2f + 0.1f * stage;
-                _plant.localScale = new Vector3(w, h * 0.5f, w);
-                _plant.localPosition = new Vector3(0, 0.2f + h * 0.5f, 0);
-                _plant.gameObject.SetActive(true);
                 _shownStage = stage;
+                ShowStage(plot.CropId, stage);
             }
 
             bool ready = phase == PlotPhase.Ready;
@@ -85,6 +83,34 @@ namespace Game.Presentation.Farm
                 float bob = Mathf.Sin(Time.time * 4f + Index) * 0.08f;
                 _readyMarker.localPosition = new Vector3(0, 1.4f + bob, 0);
             }
+        }
+    
+        /// <summary>Modelo 3D da fase (prefab gerado); sem catálogo visual, usa o cilindro do gray box.</summary>
+        private void ShowStage(string cropId, int stage)
+        {
+            ClearModel();
+            var visuals = GameRoot.Instance != null ? GameRoot.Instance.Visuals : null;
+            var prefab = visuals != null ? visuals.CropStage(cropId, stage) : null;
+            if (prefab != null)
+            {
+                _plant.gameObject.SetActive(false);
+                _model = Instantiate(prefab, transform);
+                _model.transform.localPosition = new Vector3(0, 0.2f, 0);
+                _model.transform.localRotation = Quaternion.Euler(0, (Index * 47) % 360, 0); // variedade
+                return;
+            }
+            float h = 0.15f + 0.2f * stage;
+            float w = 0.2f + 0.1f * stage;
+            _plant.localScale = new Vector3(w, h * 0.5f, w);
+            _plant.localPosition = new Vector3(0, 0.2f + h * 0.5f, 0);
+            _plant.gameObject.SetActive(true);
+        }
+
+        private void ClearModel()
+        {
+            if (_model == null) return;
+            Destroy(_model);
+            _model = null;
         }
     }
 }

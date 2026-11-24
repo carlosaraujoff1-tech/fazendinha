@@ -22,6 +22,7 @@ namespace Game.Presentation
     public sealed class GameRoot : MonoBehaviour
     {
         [SerializeField] private TextAsset catalogJson;
+        [SerializeField] private VisualCatalog visuals;
         [SerializeField] private float tickIntervalSeconds = 0.25f;
         [SerializeField] private float autosaveIntervalSeconds = 30f;
 
@@ -32,6 +33,9 @@ namespace Game.Presentation
         public static GameRoot Instance { get; private set; }
 
         public GameContext Context { get; private set; }
+
+        /// <summary>Prefabs visuais por ID (pode ser null: tudo cai no gray box).</summary>
+        public VisualCatalog Visuals => visuals;
         public CommandExecutor Commands { get; private set; }
         public IEventBus Events => Context.Events;
         public GameCatalog Catalog => Context.Catalog;

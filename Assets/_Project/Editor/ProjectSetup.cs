@@ -35,6 +35,7 @@ namespace Game.Editor
             ConfigurePlayer();
             var urp = ConfigureUrp();
             ConfigureQuality(urp);
+            Game.Editor.Art.VisualCatalogGenerator.Generate();
             SceneGenerator.GenerateMain();
             AssetDatabase.SaveAssets();
             Debug.Log("[ProjectSetup] Projeto configurado.");

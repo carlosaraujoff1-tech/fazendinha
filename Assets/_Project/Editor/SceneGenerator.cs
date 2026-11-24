@@ -1,4 +1,6 @@
 using System.IO;
+using Game.Content;
+using Game.Editor.Art;
 using Game.Presentation;
 using Game.Presentation.Controls;
 using Game.Presentation.Farm;
@@ -67,6 +69,8 @@ namespace Game.Editor
             var rootGo = new GameObject("GameRoot");
             var gameRoot = rootGo.AddComponent<GameRoot>();
             SetRef(gameRoot, "catalogJson", AssetDatabase.LoadAssetAtPath<TextAsset>(CatalogPath));
+            var visuals = AssetDatabase.LoadAssetAtPath<VisualCatalog>(VisualCatalogGenerator.CatalogPath);
+            SetRef(gameRoot, "visuals", visuals);
             rootGo.AddComponent<Bootstrap>();
 
             // Fazenda
@@ -82,6 +86,10 @@ namespace Game.Editor
             storeGo.AddComponent<StoreView>();
             var storeInteraction = storeGo.AddComponent<StoreInteraction>();
             SetRef(storeInteraction, "cameraController", cameraController);
+
+            // Arte 3D (Etapa 6): cenário em volta da fazenda e paredes da loja
+            if (visuals != null) PlaceDecor(visuals);
+            BuildStoreWalls(storeGo.transform);
 
             // UI
             var canvasGo = new GameObject("Canvas");
@@ -110,6 +118,100 @@ namespace Game.Editor
             EditorSceneManager.SaveScene(scene, MainScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(MainScenePath, true) };
             Debug.Log("[SceneGenerator] Cena gerada: " + MainScenePath);
+        }
+
+        private static GameObject Place(VisualCatalog visuals, string id, Vector3 position, float yaw, Transform parent)
+        {
+            var prefab = visuals.Decor(id);
+            if (prefab == null) return null;
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
+            go.transform.SetPositionAndRotation(position, Quaternion.Euler(0, yaw, 0));
+            go.isStatic = id != "cow" && id != "pig" && id != "sheep";
+            return go;
+        }
+
+        /// <summary>Cenário fixo (posições determinísticas). A fazenda ocupa x -5..5, z -8..1; a loja fica em x≈24.</summary>
+        private static void PlaceDecor(VisualCatalog visuals)
+        {
+            var root = new GameObject("Decor").transform;
+
+            Place(visuals, "barn", new Vector3(-1.5f, 0, 6.5f), 180, root);     // armazém
+            Place(visuals, "silo", new Vector3(4.5f, 0, 7f), 0, root);
+            Place(visuals, "windmill", new Vector3(-10f, 0, 6f), 160, root);
+            Place(visuals, "well", new Vector3(7.5f, 0, 1.5f), 30, root);
+            Place(visuals, "openbarn", new Vector3(13f, 0, 5f), 200, root);
+
+            // Cerca em volta das parcelas (comprimento real medido no prefab).
+            var fencePrefab = visuals.Decor("fence");
+            if (fencePrefab != null)
+            {
+                var probe = (GameObject)PrefabUtility.InstantiatePrefab(fencePrefab);
+                var b = new Bounds(probe.transform.position, Vector3.zero);
+                foreach (var r in probe.GetComponentsInChildren<Renderer>()) b.Encapsulate(r.bounds);
+                bool alongX = b.size.x >= b.size.z;
+                float length = Mathf.Max(0.5f, Mathf.Max(b.size.x, b.size.z));
+                Object.DestroyImmediate(probe);
+
+                const float xMin = -6.2f, xMax = 6.2f, zMin = -9.2f, zMax = 2.2f;
+                for (float x = xMin + length * 0.5f; x <= xMax; x += length)
+                {
+                    Place(visuals, "fence", new Vector3(x, 0, zMax), alongX ? 0 : 90, root);
+                    if (Mathf.Abs(x) > 1.6f) Place(visuals, "fence", new Vector3(x, 0, zMin), alongX ? 0 : 90, root); // portão
+                }
+                for (float z = zMin + length * 0.5f; z <= zMax; z += length)
+                {
+                    Place(visuals, "fence", new Vector3(xMin, 0, z), alongX ? 90 : 0, root);
+                    Place(visuals, "fence", new Vector3(xMax, 0, z), alongX ? 90 : 0, root);
+                }
+            }
+
+            // Pasto com animais (idle animado)
+            Place(visuals, "cow", new Vector3(-11f, 0, -2f), 60, root);
+            Place(visuals, "cow", new Vector3(-13.5f, 0, -4.5f), 200, root);
+            Place(visuals, "pig", new Vector3(-10f, 0, -6f), 120, root);
+            Place(visuals, "sheep", new Vector3(-14f, 0, -1f), 300, root);
+            Place(visuals, "sheep", new Vector3(-12f, 0, -7.5f), 20, root);
+
+            // Grama e flores espalhadas, fora da fazenda e da loja (semente fixa = sempre igual).
+            var rng = new System.Random(42);
+            string[] small = { "grass1", "grass2", "grass1", "flower1", "flower2" };
+            int placed = 0, tries = 0;
+            while (placed < 90 && tries++ < 2000)
+            {
+                float x = (float)(rng.NextDouble() * 60 - 22);
+                float z = (float)(rng.NextDouble() * 30 - 18);
+                bool inFarm = x > -7 && x < 9 && z > -10 && z < 9;
+                bool inStore = x > 17 && x < 31 && z > -12 && z < 7;
+                bool inPasture = x > -15.5f && x < -8.5f && z > -9 && z < 0.5f;
+                if (inFarm || inStore || inPasture) continue;
+                Place(visuals, small[rng.Next(small.Length)], new Vector3(x, 0, z), (float)(rng.NextDouble() * 360), root);
+                placed++;
+            }
+        }
+
+        /// <summary>Paredes simples do mercadinho (a arte final da loja depende de um pack com licença).</summary>
+        private static void BuildStoreWalls(Transform store)
+        {
+            var wall = GrayboxMaterialAsset("StoreWall", new Color(0.96f, 0.90f, 0.78f));
+            var trim = GrayboxMaterialAsset("StoreTrim", new Color(0.80f, 0.25f, 0.20f));
+            void Box(string name, Vector3 localPos, Vector3 size, Material m)
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.name = name;
+                go.transform.SetParent(store, false);
+                go.transform.localPosition = localPos;
+                go.transform.localScale = size;
+                go.GetComponent<Renderer>().sharedMaterial = m;
+                Object.DestroyImmediate(go.GetComponent<Collider>());
+                go.isStatic = true;
+            }
+            Box("WallLeft", new Vector3(-5.1f, 1.25f, -2f), new Vector3(0.2f, 2.5f, 12f), wall);
+            Box("WallRight", new Vector3(5.1f, 1.25f, -2f), new Vector3(0.2f, 2.5f, 12f), wall);
+            Box("WallBackL", new Vector3(-3.1f, 1.25f, 4f), new Vector3(4f, 2.5f, 0.2f), wall);
+            Box("WallBackR", new Vector3(3.1f, 1.25f, 4f), new Vector3(4f, 2.5f, 0.2f), wall);
+            Box("Awning", new Vector3(0, 2.7f, 4.4f), new Vector3(10.4f, 0.4f, 1.0f), trim);
+            Box("TrimLeft", new Vector3(-5.1f, 2.6f, -2f), new Vector3(0.3f, 0.2f, 12.1f), trim);
+            Box("TrimRight", new Vector3(5.1f, 2.6f, -2f), new Vector3(0.3f, 0.2f, 12.1f), trim);
         }
 
         private static RectTransform FullRect(string name, Transform parent)

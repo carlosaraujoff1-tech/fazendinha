@@ -1,0 +1,25 @@
+{
+  "comment": "Liga IDs do jogo aos modelos 3D (Assets/ThirdParty). Lido só pelo gerador de prefabs do Editor.",
+  "crops": [
+    { "crop": "alface",  "stages": "Quaternius/Crops/Lettuce_{0}.fbx", "product": "Quaternius/Crops/Lettuce_Crop.fbx" },
+    { "crop": "cenoura", "stages": "Quaternius/Crops/Carrot_{0}.fbx",  "product": "Quaternius/Crops/Carrot_Crop.fbx" },
+    { "crop": "batata",  "stages": "Quaternius/Crops/Beet_{0}.fbx",    "product": "Quaternius/Crops/Beet_Crop.fbx" },
+    { "crop": "tomate",  "stages": "Quaternius/Crops/Tomato_{0}.fbx",  "product": "Quaternius/Crops/Tomato_Crop.fbx" },
+    { "crop": "milho",   "stages": "Quaternius/Crops/Corn_{0}.fbx",    "product": "Quaternius/Crops/Corn_Crop.fbx" }
+  ],
+  "decor": [
+    { "id": "barn",     "model": "Quaternius/FarmBuildings/Barn.fbx",     "height": 4.5 },
+    { "id": "openbarn", "model": "Quaternius/FarmBuildings/OpenBarn.fbx", "height": 3.0 },
+    { "id": "silo",     "model": "Quaternius/FarmBuildings/Silo.fbx",     "height": 6.0 },
+    { "id": "well",     "model": "Quaternius/FarmBuildings/Well.fbx",     "height": 1.8 },
+    { "id": "windmill", "model": "Quaternius/FarmBuildings/Windmill.fbx", "height": 7.0 },
+    { "id": "fence",    "model": "Quaternius/FarmBuildings/Fence.fbx",    "height": 0.9 },
+    { "id": "grass1",   "model": "Quaternius/Crops/Grass_1.fbx",          "height": 0.3 },
+    { "id": "grass2",   "model": "Quaternius/Crops/Grass_2.fbx",          "height": 0.35 },
+    { "id": "flower1",  "model": "Quaternius/Crops/Flower_1.fbx",         "height": 0.4 },
+    { "id": "flower2",  "model": "Quaternius/Crops/Flower_2.fbx",         "height": 0.4 },
+    { "id": "cow",      "model": "Quaternius/FarmAnimals/Cow.fbx",        "height": 1.5, "animation": "Idle" },
+    { "id": "pig",      "model": "Quaternius/FarmAnimals/Pig.fbx",        "height": 0.9, "animation": "Idle" },
+    { "id": "sheep",    "model": "Quaternius/FarmAnimals/Sheep.fbx",      "height": 1.1, "animation": "Idle" }
+  ]
+}
