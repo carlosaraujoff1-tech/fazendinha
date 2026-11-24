@@ -113,7 +113,9 @@ namespace Game.Tests.Core
             Assert.IsTrue(_executor.Execute(new SellFromWarehouse { ProductId = "alface", Quantity = 1 }).IsSuccess);
             Assert.AreEqual(110, _ctx.State.Wallet.Coins);
 
-            _clock.Advance(TimeSpan.FromHours(7));
+            _clock.Advance(TimeSpan.FromHours(4)); // em dois saltos: acima de 4 h seguidas o mundo "dorme"
+            GameSimulation.Tick(_ctx);
+            _clock.Advance(TimeSpan.FromHours(3));
             var result = _executor.Execute(new SellFromWarehouse { ProductId = "alface", Quantity = 1 });
 
             Assert.AreEqual(CommandErrors.InsufficientStock, result.Error);

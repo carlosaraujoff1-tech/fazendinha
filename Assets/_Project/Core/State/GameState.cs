@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using Game.Core.Staff;
 using Game.Core.Store;
+using Game.Core.Supplier;
 
 namespace Game.Core.State
 {
@@ -31,6 +33,10 @@ namespace Game.Core.State
         public ProgressState Progress { get; set; } = new ProgressState();
 
         public StoreState Store { get; set; } = new StoreState();
+
+        public SupplierState Supplier { get; set; } = new SupplierState();
+
+        public StaffState Staff { get; set; } = new StaffState();
     }
 
     public sealed class FarmState
@@ -115,5 +121,8 @@ namespace Game.Core.State
         public long ItemsRejectedByPrice { get; set; }
         public long UnitsSold { get; set; }
         public long SalesRevenue { get; set; }
+        public long SupplierSpent { get; set; }
+        public long SalariesPaid { get; set; }
+        public long OfflineMsIgnored { get; set; }
     }
 }

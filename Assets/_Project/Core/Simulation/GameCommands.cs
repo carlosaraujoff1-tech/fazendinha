@@ -1,6 +1,8 @@
 using Game.Core.Commands;
 using Game.Core.Farm;
+using Game.Core.Staff;
 using Game.Core.Store;
+using Game.Core.Supplier;
 
 namespace Game.Core.Simulation
 {
@@ -19,6 +21,9 @@ namespace Game.Core.Simulation
             executor.Register(new SetPriceHandler());
             executor.Register(new ScanItemHandler());
             executor.Register(new BuyFurnitureHandler());
+            executor.Register(new BuyFromSupplierHandler());
+            executor.Register(new HireHandler());
+            executor.Register(new FireHandler());
             return executor;
         }
     }

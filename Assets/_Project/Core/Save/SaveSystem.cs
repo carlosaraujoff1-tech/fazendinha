@@ -116,6 +116,8 @@ namespace Game.Core.Save
                 if (plot == null) throw new SaveFormatException("Parcela nula no save.");
             if (s.Store == null || s.Store.Shelves == null || s.Store.Customers == null || s.Store.Prices == null)
                 throw new SaveFormatException("Save sem loja.");
+            if (s.Supplier == null || s.Supplier.Orders == null) s.Supplier = new Game.Core.Supplier.SupplierState();
+            if (s.Staff == null || s.Staff.Employees == null) s.Staff = new Game.Core.Staff.StaffState();
             if (s.Store.Rng == null) s.Store.Rng = new Game.Core.Randomness.RngState();
             if (s.Store.FurnitureBought == null) s.Store.FurnitureBought = new System.Collections.Generic.Dictionary<string, int>();
             foreach (var shelf in s.Store.Shelves)

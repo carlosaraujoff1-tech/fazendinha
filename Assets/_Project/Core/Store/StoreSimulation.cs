@@ -5,6 +5,7 @@ using Game.Core.Events;
 using Game.Core.Inventory;
 using Game.Core.Randomness;
 using Game.Core.Simulation;
+using Game.Core.Staff;
 using Game.Core.State;
 
 namespace Game.Core.Store
@@ -106,7 +107,23 @@ namespace Game.Core.Store
                 }
             }
 
-            // 3) Fila: paciência cai mais rápido quanto mais gente à frente
+            // 3) Funcionários (só trabalham e recebem com o jogo aberto)
+            long dtMs = (long)Math.Round(dtSeconds * 1000);
+            StaffRules.AccrueSalaries(ctx, dtMs);
+            foreach (var e in ctx.State.Staff.Employees)
+            {
+                if (!e.Active || !ctx.Catalog.TryGetStaff(e.TypeId, out var def) || def.Role != StaffRole.Cashier) continue;
+                if (StoreRules.FrontOfQueue(store) == null) { e.WorkProgressMs = 0; continue; }
+                e.WorkProgressMs += dtMs;
+                long per = Math.Max(1, (long)(def.SecondsPerAction * 1000));
+                while (e.WorkProgressMs >= per && StoreRules.FrontOfQueue(store) != null)
+                {
+                    e.WorkProgressMs -= per;
+                    ScanFront(ctx);
+                }
+            }
+
+            // 4) Fila: paciência cai mais rápido quanto mais gente à frente
             foreach (var customer in store.Customers.ToArray())
             {
                 int position = StoreRules.QueuePosition(store, customer);
@@ -231,6 +248,18 @@ namespace Game.Core.Store
                 if (match(s) && StoreRules.Units(s, t) > 0) return i;
             }
             return -1;
+        }
+
+        /// <summary>Passa o próximo item do cliente na frente da fila; se acabou, ele paga e sai.</summary>
+        public static bool ScanFront(GameContext ctx)
+        {
+            var customer = StoreRules.FrontOfQueue(ctx.State.Store);
+            if (customer == null) return false;
+            var line = customer.Cart[customer.ScannedLines];
+            customer.ScannedLines++;
+            ctx.Events.Publish(new ItemScanned(customer.Id, line.ProductId, line.Units, line.Total));
+            if (customer.ScannedLines >= customer.Cart.Count) Leave(ctx, customer, LeaveReason.Paid);
+            return true;
         }
 
         /// <summary>Cliente sai: paga as linhas já passadas no caixa; o resto volta ao armazém.</summary>

@@ -328,7 +328,9 @@ namespace Game.Tests.Core
             AddToWarehouse("alface", 5);
             _exec.Execute(new RestockCommand(0, "alface", 5));
             NoMoreSpawns();
-            _clock.Advance(TimeSpan.FromHours(7)); // alface vence em 6 h
+            _clock.Advance(TimeSpan.FromHours(4)); // alface vence em 6 h (dois saltos: limite offline 4 h)
+            GameSimulation.Tick(_ctx);
+            _clock.Advance(TimeSpan.FromHours(3));
             GameSimulation.Tick(_ctx);
             Assert.AreEqual(0, StoreRules.Units(Store.Shelves[0], _clock.UtcNowMs));
             Assert.AreEqual(5, _ctx.State.Stats.UnitsExpired);

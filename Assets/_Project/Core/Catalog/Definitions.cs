@@ -64,6 +64,7 @@ namespace Game.Core.Catalog
         public double WaterTimeReduction { get; set; } = 0.25;
         public int OfflineFarmCapSeconds { get; set; } = 4 * 3600;
         public int SalaryIntervalSeconds { get; set; } = 600;
+        public int MaxSupplierOrderUnits { get; set; } = 200;
 
         // Fazenda
         public int InitialPlots { get; set; } = 4;

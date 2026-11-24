@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Game.Core.Staff;
 using Game.Core.Store;
 
 namespace Game.Core.Catalog
@@ -31,6 +32,7 @@ namespace Game.Core.Catalog
         private readonly Dictionary<string, FurnitureDef> _furniture;
         private readonly List<ProductDef> _productList;
         private readonly List<CustomerTypeDef> _customerList;
+        private readonly Dictionary<string, StaffDef> _staff = new Dictionary<string, StaffDef>();
 
         private GameCatalog(Dictionary<string, ProductDef> products, Dictionary<string, CropDef> crops,
             Dictionary<string, CustomerTypeDef> customers, Dictionary<string, FurnitureDef> furniture,
@@ -57,6 +59,11 @@ namespace Game.Core.Catalog
         public IReadOnlyList<CustomerTypeDef> CustomerTypes => _customerList;
         public IEnumerable<FurnitureDef> Furniture => _furniture.Values;
 
+        public IEnumerable<StaffDef> Staff => _staff.Values;
+        public bool TryGetStaff(string id, out StaffDef def) => _staff.TryGetValue(id ?? "", out def);
+        public StaffDef GetStaff(string id) =>
+            TryGetStaff(id, out var s) ? s : throw new KeyNotFoundException($"Funcionário '{id}' não existe no catálogo.");
+
         public bool TryGetCustomerType(string id, out CustomerTypeDef def) => _customers.TryGetValue(id ?? "", out def);
         public bool TryGetFurniture(string id, out FurnitureDef def) => _furniture.TryGetValue(id ?? "", out def);
 
@@ -77,7 +84,8 @@ namespace Game.Core.Catalog
 
         /// <summary>Valida e monta o catálogo. Lança <see cref="CatalogException"/> com TODOS os erros encontrados.</summary>
         public static GameCatalog Build(IEnumerable<ProductDef> products, IEnumerable<CropDef> crops, EconomyConfig economy = null,
-            IEnumerable<CustomerTypeDef> customerTypes = null, IEnumerable<FurnitureDef> furniture = null, StoreConfig store = null)
+            IEnumerable<CustomerTypeDef> customerTypes = null, IEnumerable<FurnitureDef> furniture = null, StoreConfig store = null,
+            IEnumerable<StaffDef> staff = null)
         {
             var errors = new List<string>();
             var productMap = new Dictionary<string, ProductDef>();
@@ -162,8 +170,24 @@ namespace Game.Core.Catalog
             if (store.MaxCatchUpSeconds <= 0) errors.Add("MaxCatchUpSeconds <= 0.");
             if (store.MaxPriceFactor < 1) errors.Add("MaxPriceFactor < 1.");
 
+            var staffMap = new Dictionary<string, StaffDef>();
+            foreach (var s in staff ?? Enumerable.Empty<StaffDef>())
+            {
+                if (s == null) { errors.Add("Funcionário nulo."); continue; }
+                if (!CheckId(s.Id, "Funcionário", errors)) continue;
+                if (staffMap.ContainsKey(s.Id)) { errors.Add($"Funcionário '{s.Id}' duplicado."); continue; }
+                if (s.Salary < 0 || s.HireCost < 0) errors.Add($"Funcionário '{s.Id}' com custo negativo.");
+                if (s.SecondsPerAction <= 0) errors.Add($"Funcionário '{s.Id}' com tempo por ação <= 0.");
+                if (s.MaxHired < 1) errors.Add($"Funcionário '{s.Id}' com máximo < 1.");
+                staffMap[s.Id] = s;
+            }
+            if (economy.MaxSupplierOrderUnits < 1) errors.Add("Pedido máximo ao fornecedor < 1.");
+            if (economy.SalaryIntervalSeconds < 1) errors.Add("Intervalo de salário < 1 s.");
+
             if (errors.Count > 0) throw new CatalogException(errors);
-            return new GameCatalog(productMap, cropMap, customerMap, furnitureMap, productList, customerList, economy, store);
+            var catalog = new GameCatalog(productMap, cropMap, customerMap, furnitureMap, productList, customerList, economy, store);
+            foreach (var kv in staffMap) catalog._staff[kv.Key] = kv.Value;
+            return catalog;
         }
 
         private static bool CheckId(string id, string kind, List<string> errors)

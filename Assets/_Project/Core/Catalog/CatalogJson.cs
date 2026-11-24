@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Game.Core.Staff;
 using Game.Core.Store;
 using Newtonsoft.Json;
 
@@ -36,7 +37,9 @@ namespace Game.Core.Catalog
                 .Select(c => c == null ? null : new CustomerTypeDef(c.Id, c.Name, c.A, c.B, c.Weight, c.PatienceSeconds));
             var furniture = (dto.Furniture ?? new List<FurnitureDto>())
                 .Select(f => f == null ? null : new FurnitureDef(f.Id, f.Name, f.Category, f.Capacity, f.BaseCost));
-            return GameCatalog.Build(products, crops, dto.Economy ?? new EconomyConfig(), customers, furniture, dto.Store ?? new StoreConfig());
+            var staff = (dto.Staff ?? new List<StaffDto>())
+                .Select(s => s == null ? null : new StaffDef(s.Id, s.Name, s.Role, s.Salary, s.HireCost, s.SecondsPerAction, s.MaxHired));
+            return GameCatalog.Build(products, crops, dto.Economy ?? new EconomyConfig(), customers, furniture, dto.Store ?? new StoreConfig(), staff);
         }
 
         private sealed class CatalogDto
@@ -47,6 +50,18 @@ namespace Game.Core.Catalog
             [JsonProperty("customerTypes")] public List<CustomerDto> CustomerTypes { get; set; }
             [JsonProperty("furniture")] public List<FurnitureDto> Furniture { get; set; }
             [JsonProperty("store")] public StoreConfig Store { get; set; }
+            [JsonProperty("staff")] public List<StaffDto> Staff { get; set; }
+        }
+
+        private sealed class StaffDto
+        {
+            [JsonProperty("id")] public string Id { get; set; }
+            [JsonProperty("name")] public string Name { get; set; }
+            [JsonProperty("role")] [JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))] public StaffRole Role { get; set; }
+            [JsonProperty("salary")] public long Salary { get; set; }
+            [JsonProperty("hireCost")] public long HireCost { get; set; }
+            [JsonProperty("secondsPerAction")] public double SecondsPerAction { get; set; }
+            [JsonProperty("maxHired")] public int MaxHired { get; set; } = 1;
         }
 
         private sealed class CustomerDto

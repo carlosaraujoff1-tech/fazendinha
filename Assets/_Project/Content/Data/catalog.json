@@ -8,6 +8,7 @@
     "waterTimeReduction": 0.25,
     "offlineFarmCapSeconds": 14400,
     "salaryIntervalSeconds": 600,
+    "maxSupplierOrderUnits": 200,
     "initialPlots": 4,
     "maxPlots": 20,
     "plotBaseCost": 50
@@ -60,5 +61,8 @@
     "queueDrainPerCustomerAhead": 0.25,
     "maxCatchUpSeconds": 10,
     "maxPriceFactor": 10
-  }
+  },
+  "staff": [
+    {"id": "caixa", "name": "Caixa", "role": "Cashier", "salary": 60, "hireCost": 150, "secondsPerAction": 1.5, "maxHired": 1}
+  ]
 }

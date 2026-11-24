@@ -94,14 +94,7 @@ namespace Game.Core.Store
         public CommandResult Validate(GameContext ctx, ScanItemCommand c) =>
             StoreRules.FrontOfQueue(ctx.State.Store) != null ? CommandResult.Ok() : CommandResult.Fail(CommandErrors.NoCustomer);
 
-        public void Apply(GameContext ctx, ScanItemCommand c)
-        {
-            var customer = StoreRules.FrontOfQueue(ctx.State.Store);
-            var line = customer.Cart[customer.ScannedLines];
-            customer.ScannedLines++;
-            ctx.Events.Publish(new ItemScanned(customer.Id, line.ProductId, line.Units, line.Total));
-            if (customer.ScannedLines >= customer.Cart.Count) StoreSimulation.Leave(ctx, customer, LeaveReason.Paid);
-        }
+        public void Apply(GameContext ctx, ScanItemCommand c) => StoreSimulation.ScanFront(ctx);
     }
 
     public sealed class BuyFurnitureHandler : ICommandHandler<BuyFurnitureCommand>
