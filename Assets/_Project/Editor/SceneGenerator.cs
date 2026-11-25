@@ -39,6 +39,9 @@ namespace Game.Editor
             if (visuals == null) visuals = VisualCatalogGenerator.Generate();
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            // IMPORTANTE: recarregar DEPOIS de NewScene. Criar a cena descarrega assets não usados, e uma referência
+            // carregada antes vira "nula" ao ser salva na cena (era o motivo do rosa: o jogo ficava sem catálogo).
+            visuals = AssetDatabase.LoadAssetAtPath<VisualCatalog>(VisualCatalogGenerator.CatalogPath);
 
             // ---------- Câmera ----------
             var cameraGo = new GameObject("Main Camera") { tag = "MainCamera" };
@@ -82,7 +85,9 @@ namespace Game.Editor
             var rootGo = new GameObject("GameRoot");
             var gameRoot = rootGo.AddComponent<GameRoot>();
             SetRef(gameRoot, "catalogJson", AssetDatabase.LoadAssetAtPath<TextAsset>(CatalogPath));
-            SetRef(gameRoot, "visuals", visuals);
+            SetRef(gameRoot, "visuals", AssetDatabase.LoadAssetAtPath<VisualCatalog>(VisualCatalogGenerator.CatalogPath));
+            if (new SerializedObject(gameRoot).FindProperty("visuals").objectReferenceValue == null)
+                Debug.LogError("[SceneGenerator] Referência ao catálogo visual ficou NULA na cena.");
             rootGo.AddComponent<Bootstrap>();
             rootGo.AddComponent<FxPlayer>();
             rootGo.AddComponent<SoundPlayer>();

@@ -93,14 +93,18 @@ namespace Game.Presentation.UI
             _sb.Append("Armazém: ");
             long now = root.NowMs;
             bool any = false;
-            foreach (var product in root.Catalog.Products.OrderBy(p => p.ReferencePrice))
+            int shown = 0, more = 0;
+            foreach (var product in root.Catalog.Products.OrderByDescending(p => root.Context.Warehouse.Count(p.Id, now)))
             {
                 int n = root.Context.Warehouse.Count(product.Id, now);
                 if (n <= 0) continue;
+                if (shown >= 3) { more++; continue; }
                 if (any) _sb.Append("  ");
                 _sb.Append(product.Name).Append(' ').Append(n);
                 any = true;
+                shown++;
             }
+            if (more > 0) _sb.Append("  +").Append(more);
             if (!any) _sb.Append("vazio");
             _warehouse.text = _sb.ToString();
 
