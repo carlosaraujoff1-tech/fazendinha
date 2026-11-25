@@ -193,6 +193,7 @@ namespace Game.Tests.Core
         public void Offline_FarmProducesAtMost4Hours_AndStockSleeps()
         {
             _ctx.State.Progress.Level = 5;
+            _ctx.State.Farm.Seeds["milho"] = 1;
             _exec.Execute(new PlantCommand(0, "milho")); // 30 min
             _ctx.State.Wallet.Coins = 1000;
             _ctx.Warehouse.Add(LotInventory.CreateLot(_catalog.GetProduct("alface"), 4, _clock.UtcNowMs, LotSource.Farm)); // vence em 6 h
@@ -216,6 +217,7 @@ namespace Game.Tests.Core
         {
             var welcome = new List<OfflineReturned>();
             _bus.Subscribe<OfflineReturned>(welcome.Add);
+            _ctx.State.Farm.Seeds["tomate"] = 1;
             _exec.Execute(new PlantCommand(0, "tomate")); // 15 min
             _clock.AdvanceSeconds(30); GameSimulation.Tick(_ctx);
             Assert.IsEmpty(welcome);

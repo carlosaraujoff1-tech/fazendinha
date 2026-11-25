@@ -22,6 +22,8 @@ namespace Game.Presentation.UI
         private Button _scan;
         private Button _furniture;
         private Button _supplier;
+        private Button _seedShop;
+        private Button _animals;
         private Button _tabFarm;
         private Button _tabStore;
         private AreaSwitcher _area;
@@ -52,6 +54,10 @@ namespace Game.Presentation.UI
             ((RectTransform)_furniture.transform).Anchor(new Vector2(0.66f, 0.12f), new Vector2(0.79f, 0.88f));
             _supplier = UiFactory.MakeButton("Supplier", bottom.transform, "Fornecedor", () => FindFirstObjectByType<StoreMenus>()?.OpenSupplier(), 30);
             ((RectTransform)_supplier.transform).Anchor(new Vector2(0.52f, 0.12f), new Vector2(0.65f, 0.88f));
+            _seedShop = UiFactory.MakeButton("Seeds", bottom.transform, "Sementes", () => FindFirstObjectByType<StoreMenus>()?.OpenSeedShop(), 30, ButtonStyle.Blue);
+            ((RectTransform)_seedShop.transform).Anchor(new Vector2(0.52f, 0.12f), new Vector2(0.65f, 0.88f));
+            _animals = UiFactory.MakeButton("Animals", bottom.transform, "Animais", () => FindFirstObjectByType<StoreMenus>()?.OpenAnimals(), 30, ButtonStyle.Blue);
+            ((RectTransform)_animals.transform).Anchor(new Vector2(0.66f, 0.12f), new Vector2(0.79f, 0.88f));
             _buyPlot = UiFactory.MakeButton("BuyPlot", bottom.transform, "", () => GameRoot.Instance.Execute(new BuyPlotCommand()), 32);
             ((RectTransform)_buyPlot.transform).Anchor(new Vector2(0.80f, 0.12f), new Vector2(0.99f, 0.88f));
             _scan = UiFactory.MakeButton("Scan", bottom.transform, "Passar item", StoreInteraction.Scan, 32);
@@ -81,6 +87,8 @@ namespace Game.Presentation.UI
             _scan.gameObject.SetActive(inStore);
             _furniture.gameObject.SetActive(inStore);
             _supplier.gameObject.SetActive(inStore);
+            _seedShop.gameObject.SetActive(!inStore);
+            _animals.gameObject.SetActive(!inStore);
             UiFactory.SetStyle(_tabFarm, inStore ? ButtonStyle.Grey : ButtonStyle.Yellow);
             UiFactory.SetStyle(_tabStore, inStore ? ButtonStyle.Yellow : ButtonStyle.Grey);
             if (inStore)

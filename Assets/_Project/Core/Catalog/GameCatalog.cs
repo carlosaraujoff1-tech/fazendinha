@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Game.Core.Animals;
 using Game.Core.Staff;
 using Game.Core.Store;
 
@@ -33,6 +34,8 @@ namespace Game.Core.Catalog
         private readonly List<ProductDef> _productList;
         private readonly List<CustomerTypeDef> _customerList;
         private readonly Dictionary<string, StaffDef> _staff = new Dictionary<string, StaffDef>();
+        private readonly List<AnimalDef> _animalList = new List<AnimalDef>();
+        private readonly Dictionary<string, AnimalDef> _animals = new Dictionary<string, AnimalDef>();
 
         private GameCatalog(Dictionary<string, ProductDef> products, Dictionary<string, CropDef> crops,
             Dictionary<string, CustomerTypeDef> customers, Dictionary<string, FurnitureDef> furniture,
@@ -60,6 +63,12 @@ namespace Game.Core.Catalog
         public IEnumerable<FurnitureDef> Furniture => _furniture.Values;
 
         public IEnumerable<StaffDef> Staff => _staff.Values;
+
+        /// <summary>Tipos de animal na ordem dos dados.</summary>
+        public IReadOnlyList<AnimalDef> Animals => _animalList;
+        public bool TryGetAnimal(string id, out AnimalDef def) => _animals.TryGetValue(id ?? "", out def);
+        public AnimalDef GetAnimal(string id) =>
+            TryGetAnimal(id, out var a) ? a : throw new KeyNotFoundException($"Animal '{id}' não existe no catálogo.");
         public bool TryGetStaff(string id, out StaffDef def) => _staff.TryGetValue(id ?? "", out def);
         public StaffDef GetStaff(string id) =>
             TryGetStaff(id, out var s) ? s : throw new KeyNotFoundException($"Funcionário '{id}' não existe no catálogo.");
@@ -85,7 +94,7 @@ namespace Game.Core.Catalog
         /// <summary>Valida e monta o catálogo. Lança <see cref="CatalogException"/> com TODOS os erros encontrados.</summary>
         public static GameCatalog Build(IEnumerable<ProductDef> products, IEnumerable<CropDef> crops, EconomyConfig economy = null,
             IEnumerable<CustomerTypeDef> customerTypes = null, IEnumerable<FurnitureDef> furniture = null, StoreConfig store = null,
-            IEnumerable<StaffDef> staff = null)
+            IEnumerable<StaffDef> staff = null, IEnumerable<AnimalDef> animals = null)
         {
             var errors = new List<string>();
             var productMap = new Dictionary<string, ProductDef>();
@@ -182,12 +191,40 @@ namespace Game.Core.Catalog
                 if (s.MaxHired < 1) errors.Add($"Funcionário '{s.Id}' com máximo < 1.");
                 staffMap[s.Id] = s;
             }
+            var animalMap = new Dictionary<string, AnimalDef>();
+            var animalList = new List<AnimalDef>();
+            foreach (var a in animals ?? Enumerable.Empty<AnimalDef>())
+            {
+                if (a == null) { errors.Add("Animal nulo."); continue; }
+                if (!CheckId(a.Id, "Animal", errors)) continue;
+                if (animalMap.ContainsKey(a.Id)) { errors.Add($"Animal '{a.Id}' duplicado."); continue; }
+                if (!productMap.ContainsKey(a.ProductId ?? "")) errors.Add($"Animal '{a.Id}' produz produto inexistente '{a.ProductId}'.");
+                if (a.FeedProductIds.Count == 0) errors.Add($"Animal '{a.Id}' sem comida.");
+                foreach (var f in a.FeedProductIds)
+                    if (!productMap.ContainsKey(f ?? "")) errors.Add($"Animal '{a.Id}' come produto inexistente '{f}'.");
+                if (a.FeedPerCycle <= 0) errors.Add($"Animal '{a.Id}' com comida por ciclo <= 0.");
+                if (a.CycleSeconds <= 0) errors.Add($"Animal '{a.Id}' com ciclo <= 0.");
+                if (a.Yield <= 0) errors.Add($"Animal '{a.Id}' com produção <= 0.");
+                if (a.BaseCost < 0) errors.Add($"Animal '{a.Id}' com custo negativo.");
+                if (a.MaxCount < 1) errors.Add($"Animal '{a.Id}' com máximo < 1.");
+                animalMap[a.Id] = a;
+                animalList.Add(a);
+            }
+            foreach (var kv in economy.StartingSeeds ?? new Dictionary<string, int>())
+            {
+                if (!cropMap.ContainsKey(kv.Key ?? "")) errors.Add($"Semente inicial de cultura inexistente '{kv.Key}'.");
+                if (kv.Value < 0) errors.Add($"Semente inicial negativa para '{kv.Key}'.");
+            }
+            foreach (var id in economy.StartingAnimals ?? new string[0])
+                if (!animalMap.ContainsKey(id ?? "")) errors.Add($"Animal inicial inexistente '{id}'.");
+
             if (economy.MaxSupplierOrderUnits < 1) errors.Add("Pedido máximo ao fornecedor < 1.");
             if (economy.SalaryIntervalSeconds < 1) errors.Add("Intervalo de salário < 1 s.");
 
             if (errors.Count > 0) throw new CatalogException(errors);
             var catalog = new GameCatalog(productMap, cropMap, customerMap, furnitureMap, productList, customerList, economy, store);
             foreach (var kv in staffMap) catalog._staff[kv.Key] = kv.Value;
+            foreach (var a in animalList) { catalog._animals[a.Id] = a; catalog._animalList.Add(a); }
             return catalog;
         }
 

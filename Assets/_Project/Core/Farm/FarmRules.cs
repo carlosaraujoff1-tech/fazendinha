@@ -50,6 +50,9 @@ namespace Game.Core.Farm
         public static long NextPlotCost(GameState state, EconomyConfig economy) =>
             CostCurve.RepeatableCost(economy.PlotBaseCost, state.Farm.PlotsBought, economy.RepeatableCostGrowth);
 
+        public static int SeedsOf(GameState state, string cropId) =>
+            cropId != null && state.Farm.Seeds.TryGetValue(cropId, out int n) ? n : 0;
+
         public static bool IsCropUnlocked(CropDef crop, GameState state) => state.Progress.Level >= crop.UnlockLevel;
 
         internal static bool TryGetPlot(GameContext ctx, int index, out PlotState plot)

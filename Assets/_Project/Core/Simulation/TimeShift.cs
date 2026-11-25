@@ -18,6 +18,12 @@ namespace Game.Core.Simulation
                 plot.ReadyAtMs += deltaMs;
             }
             foreach (var order in s.Supplier.Orders) order.DeliverAtMs += deltaMs;
+            foreach (var animal in s.Farm.Animals)
+            {
+                if (animal.IsHungry) continue;
+                animal.FedAtMs += deltaMs;
+                animal.ReadyAtMs += deltaMs;
+            }
 
             var store = s.Store;
             foreach (var shelf in store.Shelves) ShiftLots(shelf.Lots, deltaMs);

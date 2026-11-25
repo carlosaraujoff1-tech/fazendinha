@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Game.Core.Catalog;
 using Game.Core.Display;
+using Game.Core.Animals;
+using Game.Core.Farm;
 using Game.Core.Staff;
 using Game.Core.Store;
 using Game.Core.Supplier;
@@ -163,6 +166,50 @@ namespace Game.Presentation.UI
         // ---------- Móveis ----------
 
         public void OpenFurniture() => Show("Melhorias da loja", BuildFurniture);
+
+        // ---------- Vendinha de sementes ----------
+
+        public void OpenSeedShop() => Show("Vendinha de sementes", BuildSeedShop);
+
+        private void BuildSeedShop()
+        {
+            var root = GameRoot.Instance;
+            foreach (var crop in root.Catalog.Crops.OrderBy(c => c.UnlockLevel).ThenBy(c => c.GrowSeconds))
+            {
+                var c = crop;
+                int have = FarmRules.SeedsOf(root.State, c.Id);
+                bool unlocked = FarmRules.IsCropUnlocked(c, root.State);
+                long coins = root.State.Wallet.Coins;
+                if (!unlocked) { Info($"{c.Name}: libera no nível {c.UnlockLevel}"); continue; }
+                PairRow($"{c.Name} x5 · {DisplayFormat.Coins(c.SeedCost * 5)}   (tem {have})",
+                    () => root.Execute(new BuySeedsCommand(c.Id, 5)), coins >= c.SeedCost * 5,
+                    $"x1 · {c.SeedCost}  ·  {DisplayFormat.Duration(c.GrowSeconds * 1000L)}",
+                    () => root.Execute(new BuySeedsCommand(c.Id, 1)));
+            }
+        }
+
+        // ---------- Animais ----------
+
+        public void OpenAnimals() => Show("Animais", BuildAnimals);
+
+        private void BuildAnimals()
+        {
+            var root = GameRoot.Instance;
+            long now = root.NowMs;
+            foreach (var animal in root.Catalog.Animals)
+            {
+                var a = animal;
+                int count = AnimalRules.CountOf(root.State, a.Id);
+                long cost = AnimalRules.NextCost(root.State, a, root.Catalog.Economy);
+                string eats = string.Join("/", a.FeedProductIds.Select(id => root.Catalog.TryGetProduct(id, out var p) ? p.Name : id));
+                string gives = root.Catalog.TryGetProduct(a.ProductId, out var prod) ? prod.Name : a.ProductId;
+                int available = AnimalRules.AvailableFeed(root.Context, a);
+                Info($"{a.Name} ({count}/{a.MaxCount}): come {a.FeedPerCycle} {eats} (tem {available}) → {a.Yield} {gives} a cada {DisplayFormat.Duration(a.CycleSeconds * 1000L)}");
+                bool can = count < a.MaxCount && root.State.Wallet.Coins >= cost && root.State.Progress.Level >= a.UnlockLevel;
+                Row(count >= a.MaxCount ? $"{a.Name}: máximo" : $"Comprar {a.Name} · {DisplayFormat.Coins(cost)}",
+                    () => root.Execute(new BuyAnimalCommand(a.Id)), can);
+            }
+        }
 
         // ---------- Fornecedor ----------
 

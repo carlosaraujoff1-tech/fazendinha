@@ -97,6 +97,7 @@ namespace Game.Editor
             var farmGo = new GameObject("Farm");
             var farmView = farmGo.AddComponent<FarmView>();
             var interaction = farmGo.AddComponent<FarmInteraction>();
+            new GameObject("Animals").AddComponent<AnimalsView>();
             SetRef(interaction, "cameraController", cameraController);
             SetRef(interaction, "farmView", farmView);
 
@@ -268,6 +269,16 @@ namespace Game.Editor
             Place(v, "awning", store.position + new Vector3(0, 2.4f, 4.35f), 180f, store);
         }
 
+        private static void PlaceProductProp(VisualCatalog v, string productId, Vector3 pos, Transform parent)
+        {
+            var prefab = v.Product(productId);
+            if (prefab == null) return;
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
+            go.transform.position = pos;
+            go.transform.localScale *= 2.2f;
+            go.isStatic = true;
+        }
+
         private static float MeasureWidth(GameObject prefab, out bool alongX)
         {
             alongX = true;
@@ -302,7 +313,23 @@ namespace Game.Editor
             Place(v, "silo", new Vector3(4.5f, 0, 7.5f), 0, root);
             Place(v, "windmill", new Vector3(-11f, 0, 7f), 160, root);
             Place(v, "well", new Vector3(8f, 0, 1.5f), 30, root);
-            Place(v, "openbarn", new Vector3(12.5f, 0, 5.5f), 200, root);
+            // Vendinha de sementes (galpão aberto): tocar abre a loja de sementes.
+            var seedShop = Place(v, "openbarn", new Vector3(10.5f, 0, 4.5f), 200, root);
+            if (seedShop != null)
+            {
+                seedShop.isStatic = false;
+                var sb = new Bounds(seedShop.transform.position, Vector3.zero);
+                foreach (var r in seedShop.GetComponentsInChildren<Renderer>()) sb.Encapsulate(r.bounds);
+                var col = seedShop.AddComponent<BoxCollider>();
+                col.center = seedShop.transform.InverseTransformPoint(sb.center);
+                col.size = new Vector3(sb.size.x, sb.size.y, sb.size.z);
+                seedShop.AddComponent<SeedShopView>();
+                // Sacos de produtos na frente, para parecer uma vendinha
+                PlaceProductProp(v, "trigo", seedShop.transform.position + new Vector3(-0.8f, 0, -1.9f), root);
+                PlaceProductProp(v, "milho", seedShop.transform.position + new Vector3(0.2f, 0, -2.1f), root);
+                PlaceProductProp(v, "alface", seedShop.transform.position + new Vector3(1.1f, 0, -1.8f), root);
+            }
+            Place(v, "coop", new Vector3(-9.5f, 0, 5.5f), 160, root);
             Place(v, "tractor", new Vector3(6.2f, 0, 4.2f), 215, root);
             Place(v, "truck", new Vector3(32.5f, 0, -1.5f), 180, root);
 
@@ -324,12 +351,23 @@ namespace Game.Editor
                 }
             }
 
-            // Pasto
-            Place(v, "cow", new Vector3(-11f, 0, -2f), 60, root);
-            Place(v, "cow", new Vector3(-13.5f, 0, -4.5f), 200, root);
-            Place(v, "pig", new Vector3(-10f, 0, -6f), 120, root);
-            Place(v, "sheep", new Vector3(-14f, 0, -1f), 300, root);
-            Place(v, "sheep", new Vector3(-12f, 0, -7.5f), 20, root);
+            // Pasto cercado (os animais do jogador são criados pelo AnimalsView); o porco é só enfeite.
+            Place(v, "pig", new Vector3(-16.5f, 0, -8.5f), 120, root);
+            if (length > 0.1f)
+            {
+                const float pxMin = -16.2f, pxMax = -8.6f, pzMin = -7.6f, pzMax = 0.4f;
+                float yawX = alongX ? 0 : 90, yawZ = alongX ? 90 : 0;
+                for (float x = pxMin + length * 0.5f; x <= pxMax; x += length)
+                {
+                    Place(v, "fence", new Vector3(x, 0, pzMax), yawX, root);
+                    Place(v, "fence", new Vector3(x, 0, pzMin), yawX, root);
+                }
+                for (float z = pzMin + length * 0.5f; z <= pzMax; z += length)
+                {
+                    Place(v, "fence", new Vector3(pxMin, 0, z), yawZ, root);
+                    Place(v, "fence", new Vector3(pxMax, 0, z), yawZ, root);
+                }
+            }
 
             // Árvores em volta (moldura), arbustos, pedras, flores, grama — semente fixa.
             var rng = new System.Random(42);
@@ -341,9 +379,10 @@ namespace Game.Editor
                 bool farm = x > -7 - margin && x < 9 + margin && z > -7.8f - margin && z < 10 + margin;
                 bool store = x > 17.5f - margin && x < 31 + margin && z > -16 - margin && z < 7 + margin;
                 bool path = x > 5 && x < 19 && z > -5 - margin && z < -2 + margin;
-                bool pasture = x > -15.5f && x < -8.5f && z > -9 && z < 0.5f;
+                bool pasture = x > -17f && x < -7.8f && z > -9.5f && z < 8f; // pasto + galinheiro
                 bool truck = x > 30 && x < 35 && z > -4 && z < 1;
-                return farm || store || path || pasture || truck;
+                bool seedShop = x > 7.5f - margin && x < 14f + margin && z > 0.5f - margin && z < 8.5f + margin;
+                return farm || store || path || pasture || truck || seedShop;
             }
 
             int placedTrees = 0;

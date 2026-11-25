@@ -48,6 +48,10 @@ namespace Game.Core.Commands
         public const string ShelfHasOtherProduct = "shelf_other_product";
         public const string ShelfFull = "shelf_full";
         public const string NoCustomer = "no_customer";
+        public const string NoSeeds = "no_seeds";
+        public const string NoFeed = "no_feed";
+        public const string UnknownAnimal = "unknown_animal";
+        public const string AlreadyFed = "already_fed";
     }
 
     /// <summary>

@@ -45,6 +45,7 @@ namespace Game.Presentation.UI
             _body.text =
                 $"Você ficou fora {DisplayFormat.Duration(e.AwayMs)}.\n{credited}\n\n" +
                 $"Parcelas prontas para colher: {e.PlotsReady}\n" +
+                (e.AnimalsReady > 0 ? $"Animais com produção pronta: {e.AnimalsReady}\n" : "") +
                 $"Entregas do fornecedor: {e.Deliveries}\n" +
                 (e.UnitsExpired > 0 ? $"Produtos vencidos: {e.UnitsExpired}\n" : "") +
                 "\nA loja não vende com o jogo fechado.";

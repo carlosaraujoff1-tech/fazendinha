@@ -112,6 +112,10 @@ namespace Game.Core.Save
             if (s.Stats == null) s.Stats = new StatsState();
             if (s.Progress == null) s.Progress = new ProgressState();
             if (s.Farm == null || s.Farm.Plots == null) throw new SaveFormatException("Save sem fazenda.");
+            if (s.Farm.Seeds == null) s.Farm.Seeds = new System.Collections.Generic.Dictionary<string, int>();
+            if (s.Farm.Animals == null) s.Farm.Animals = new System.Collections.Generic.List<AnimalState>();
+            foreach (var animal in s.Farm.Animals)
+                if (animal == null) throw new SaveFormatException("Animal nulo no save.");
             foreach (var plot in s.Farm.Plots)
                 if (plot == null) throw new SaveFormatException("Parcela nula no save.");
             if (s.Store == null || s.Store.Shelves == null || s.Store.Customers == null || s.Store.Prices == null)

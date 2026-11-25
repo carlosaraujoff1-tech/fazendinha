@@ -1,4 +1,5 @@
 using Game.Core.Commands;
+using Game.Core.Animals;
 using Game.Core.Farm;
 using Game.Core.Staff;
 using Game.Core.Store;
@@ -17,6 +18,10 @@ namespace Game.Core.Simulation
             executor.Register(new WaterHandler());
             executor.Register(new HarvestHandler());
             executor.Register(new BuyPlotHandler());
+            executor.Register(new BuySeedsHandler());
+            executor.Register(new BuyAnimalHandler());
+            executor.Register(new FeedAnimalHandler());
+            executor.Register(new CollectAnimalHandler());
             executor.Register(new RestockHandler());
             executor.Register(new SetPriceHandler());
             executor.Register(new ScanItemHandler());

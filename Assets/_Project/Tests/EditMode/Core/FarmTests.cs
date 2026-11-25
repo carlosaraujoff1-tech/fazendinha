@@ -27,6 +27,7 @@ namespace Game.Tests.Core
             _bus = new EventBus();
             _ctx = new GameContext(NewGame.Create(catalog, _clock), catalog, _clock, _bus);
             _exec = GameCommands.CreateExecutor(_ctx);
+            foreach (var crop in catalog.Crops) _ctx.State.Farm.Seeds[crop.Id] = 10; // estoque de sementes para os testes
         }
 
         private PlotState Plot(int i) => _ctx.State.Farm.Plots[i];
@@ -45,7 +46,8 @@ namespace Game.Tests.Core
             _bus.Subscribe<CropHarvested>(harvested.Add);
 
             Assert.IsTrue(_exec.Execute(new PlantCommand(0, "cenoura")).IsSuccess);   // 180 s, semente 18
-            Assert.AreEqual(82, _ctx.State.Wallet.Coins);
+            Assert.AreEqual(100, _ctx.State.Wallet.Coins, "plantar usa semente do estoque, não moedas");
+            Assert.AreEqual(9, FarmRules.SeedsOf(_ctx.State, "cenoura"));
             Assert.AreEqual(PlotPhase.Growing, FarmRules.GetPhase(Plot(0), _clock.UtcNowMs));
 
             _clock.AdvanceSeconds(60);                                                // restam 120 s
@@ -84,9 +86,25 @@ namespace Game.Tests.Core
             _exec.Execute(new PlantCommand(0, "alface"));
             Assert.AreEqual(CommandErrors.PlotOccupied, _exec.Execute(new PlantCommand(0, "alface")).Error);
 
-            _ctx.State.Wallet.Coins = 9;
-            Assert.AreEqual(CommandErrors.InsufficientCoins, _exec.Execute(new PlantCommand(1, "alface")).Error);
-            Assert.AreEqual(9, _ctx.State.Wallet.Coins);
+            _ctx.State.Farm.Seeds["alface"] = 0;
+            Assert.AreEqual(CommandErrors.NoSeeds, _exec.Execute(new PlantCommand(1, "alface")).Error);
+        }
+
+        [Test]
+        public void BuySeeds_AddsToStock_AndCostsCoins()
+        {
+            _ctx.State.Farm.Seeds.Clear();
+            Assert.IsTrue(_exec.Execute(new BuySeedsCommand("cenoura", 3)).IsSuccess);
+            Assert.AreEqual(100 - 3 * 18, _ctx.State.Wallet.Coins);
+            Assert.AreEqual(3, FarmRules.SeedsOf(_ctx.State, "cenoura"));
+            Assert.IsTrue(_exec.Execute(new PlantCommand(0, "cenoura")).IsSuccess);
+            Assert.AreEqual(2, FarmRules.SeedsOf(_ctx.State, "cenoura"));
+
+            Assert.AreEqual(CommandErrors.UnknownCrop, _exec.Execute(new BuySeedsCommand("banana", 1)).Error);
+            Assert.AreEqual(CommandErrors.InvalidArgument, _exec.Execute(new BuySeedsCommand("alface", 0)).Error);
+            Assert.AreEqual(CommandErrors.Locked, _exec.Execute(new BuySeedsCommand("milho", 1)).Error);
+            Assert.AreEqual(CommandErrors.InsufficientCoins, _exec.Execute(new BuySeedsCommand("cenoura", 3)).Error);
+            Assert.AreEqual(0, FarmRules.SeedsOf(_ctx.State, null));
         }
 
         [Test]

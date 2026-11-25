@@ -34,7 +34,7 @@ namespace Game.Editor.Art
         {
             public CropEntry[] crops; public ModelEntry[] products; public ModelEntry[] furniture; public ModelEntry cashRegister;
             public string[] customers; public float characterHeight = 1.25f; public string employee;
-            public ModelEntry[] decor; public Particles particles; public SoundEntry[] sounds; public UiEntry ui;
+            public ModelEntry[] decor; public ModelEntry[] animals; public Particles particles; public SoundEntry[] sounds; public UiEntry ui;
         }
         [Serializable] private sealed class CropEntry { public string crop; public string stages; }
         [Serializable] private sealed class ModelEntry { public string id; public string model; public float height; public float width; public string animation; }
@@ -61,7 +61,7 @@ namespace Game.Editor.Art
                 AssetDatabase.CreateAsset(catalog, CatalogPath);
             }
             catalog.crops.Clear(); catalog.products.Clear(); catalog.furniture.Clear(); catalog.customers.Clear();
-            catalog.decor.Clear(); catalog.effects.Clear(); catalog.sounds.Clear();
+            catalog.decor.Clear(); catalog.effects.Clear(); catalog.sounds.Clear(); catalog.animals.Clear();
 
             // ---------- Materiais base (referenciados = shaders garantidos no build) ----------
             catalog.baseLit = LitMaterial("BaseLit", Color.white, null, Vector2.one);
@@ -86,6 +86,11 @@ namespace Game.Editor.Art
             // ---------- Produtos ----------
             foreach (var e in map.products ?? new ModelEntry[0])
             {
+                if (e.model == "builtin:yarn")
+                {
+                    catalog.products.Add(new VisualCatalog.IdPrefab { id = e.id, prefab = BuildYarn(e.id, e.height) });
+                    continue;
+                }
                 var model = LoadModel(e.model);
                 if (model == null) { Warn(e.model); continue; }
                 var prefab = SaveWrapper(model, FitByHeight(model, e.height, e.height * 1.8f), $"{OutDir}/Products/{e.id}.prefab", false);
@@ -140,6 +145,17 @@ namespace Game.Editor.Art
                 if (!string.IsNullOrEmpty(e.animation)) ctrl = BuildLoopController(ThirdParty + e.model, e.animation, e.id);
                 var prefab = SaveWrapper(model, s, $"{OutDir}/Decor/{e.id}.prefab", castShadows: e.height >= 0.6f || e.height <= 0, controller: ctrl);
                 catalog.decor.Add(new VisualCatalog.IdPrefab { id = e.id, prefab = prefab });
+            }
+
+            // ---------- Animais do jogo (um modelo por tipo) ----------
+            foreach (var e in map.animals ?? new ModelEntry[0])
+            {
+                var model = LoadModel(e.model);
+                if (model == null) { Warn(e.model); continue; }
+                AnimatorController ctrl = string.IsNullOrEmpty(e.animation) ? null : BuildLoopController(ThirdParty + e.model, e.animation, "animal_" + e.id);
+                var prefab = SaveWrapper(model, FitByHeight(model, e.height, e.height * 2.5f), $"{OutDir}/Decor/animal_{e.id}.prefab", true,
+                    addCollider: true, controller: ctrl);
+                catalog.animals.Add(new VisualCatalog.IdPrefab { id = e.id, prefab = prefab });
             }
 
             // ---------- Efeitos ----------
@@ -314,6 +330,34 @@ namespace Game.Editor.Art
                 animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
             }
 
+            var prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
+            Object.DestroyImmediate(root);
+            return prefab;
+        }
+
+        /// <summary>Novelo de lã (não há modelo nos packs): esfera creme com faixas.</summary>
+        private static GameObject BuildYarn(string id, float height)
+        {
+            var wool = LitMaterial("Wool", new Color(0.97f, 0.93f, 0.84f), null, Vector2.one);
+            var band = LitMaterial("WoolBand", new Color(0.86f, 0.78f, 0.66f), null, Vector2.one);
+            var root = new GameObject(id);
+            var ball = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            ball.transform.SetParent(root.transform, false);
+            ball.transform.localScale = Vector3.one * height;
+            ball.transform.localPosition = new Vector3(0, height * 0.5f, 0);
+            ball.GetComponent<Renderer>().sharedMaterial = wool;
+            Object.DestroyImmediate(ball.GetComponent<Collider>());
+            for (int i = 0; i < 3; i++)
+            {
+                var ring = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                ring.transform.SetParent(root.transform, false);
+                ring.transform.localScale = new Vector3(height * 1.03f, height * 0.12f, height * 1.03f);
+                ring.transform.localPosition = new Vector3(0, height * 0.5f, 0);
+                ring.transform.localRotation = Quaternion.Euler(30f + i * 60f, i * 50f, 0);
+                ring.GetComponent<Renderer>().sharedMaterial = band;
+                Object.DestroyImmediate(ring.GetComponent<Collider>());
+            }
+            string path = $"{OutDir}/Products/{id}.prefab";
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
             Object.DestroyImmediate(root);
             return prefab;

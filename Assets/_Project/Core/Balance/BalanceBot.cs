@@ -74,13 +74,16 @@ namespace Game.Core.Balance
                 double bestRate = 0;
                 foreach (var crop in _ctx.Catalog.Crops)
                 {
-                    if (!FarmRules.IsCropUnlocked(crop, _ctx.State) || !_ctx.Wallet.CanAffordCoins(crop.SeedCost)) continue;
+                    bool hasSeed = FarmRules.SeedsOf(_ctx.State, crop.Id) > 0;
+                    if (!FarmRules.IsCropUnlocked(crop, _ctx.State) || (!hasSeed && !_ctx.Wallet.CanAffordCoins(crop.SeedCost))) continue;
                     var product = _ctx.Catalog.GetProduct(crop.ProductId);
                     if (TotalStock(product.Id) + CountGrowing(crop.Id) * crop.Yield >= StockTarget) continue;
                     double rate = (crop.Yield * (double)product.ReferencePrice - crop.SeedCost) / crop.GrowSeconds;
                     if (rate > bestRate) { bestRate = rate; best = crop; }
                 }
-                if (best != null) _exec.Execute(new PlantCommand(i, best.Id));
+                if (best == null) continue;
+                if (FarmRules.SeedsOf(_ctx.State, best.Id) < 1) _exec.Execute(new BuySeedsCommand(best.Id, 1)); // vendinha
+                _exec.Execute(new PlantCommand(i, best.Id));
             }
         }
 
@@ -150,6 +153,12 @@ namespace Game.Core.Balance
         private void Invest()
         {
             var economy = _ctx.Catalog.Economy;
+
+            // Contrata o caixa quando a reserva cobre contratação + algumas folhas de salário (mesma regra para todos).
+            foreach (var staff in _ctx.Catalog.Staff)
+                if (Staff.StaffRules.CountOf(_ctx.State.Staff, staff.Id) < staff.MaxHired &&
+                    _ctx.Wallet.Coins >= staff.HireCost + staff.Salary * 6)
+                    _exec.Execute(new Staff.HireCommand(staff.Id));
             if (UsesFarm && _ctx.State.Farm.Plots.Count < economy.MaxPlots)
             {
                 long cost = FarmRules.NextPlotCost(_ctx.State, economy);

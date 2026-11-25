@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Game.Core.Animals;
 using Game.Core.Staff;
 using Game.Core.Store;
 using Newtonsoft.Json;
@@ -39,7 +40,10 @@ namespace Game.Core.Catalog
                 .Select(f => f == null ? null : new FurnitureDef(f.Id, f.Name, f.Category, f.Capacity, f.BaseCost));
             var staff = (dto.Staff ?? new List<StaffDto>())
                 .Select(s => s == null ? null : new StaffDef(s.Id, s.Name, s.Role, s.Salary, s.HireCost, s.SecondsPerAction, s.MaxHired));
-            return GameCatalog.Build(products, crops, dto.Economy ?? new EconomyConfig(), customers, furniture, dto.Store ?? new StoreConfig(), staff);
+            var animals = (dto.Animals ?? new List<AnimalDto>())
+                .Select(a => a == null ? null : new AnimalDef(a.Id, a.Name, a.Product, a.Feed ?? new List<string>(), a.FeedPerCycle,
+                    a.CycleSeconds, a.Yield, a.Cost, a.MaxCount, a.UnlockLevel));
+            return GameCatalog.Build(products, crops, dto.Economy ?? new EconomyConfig(), customers, furniture, dto.Store ?? new StoreConfig(), staff, animals);
         }
 
         private sealed class CatalogDto
@@ -51,6 +55,21 @@ namespace Game.Core.Catalog
             [JsonProperty("furniture")] public List<FurnitureDto> Furniture { get; set; }
             [JsonProperty("store")] public StoreConfig Store { get; set; }
             [JsonProperty("staff")] public List<StaffDto> Staff { get; set; }
+            [JsonProperty("animals")] public List<AnimalDto> Animals { get; set; }
+        }
+
+        private sealed class AnimalDto
+        {
+            [JsonProperty("id")] public string Id { get; set; }
+            [JsonProperty("name")] public string Name { get; set; }
+            [JsonProperty("product")] public string Product { get; set; }
+            [JsonProperty("feed")] public List<string> Feed { get; set; }
+            [JsonProperty("feedPerCycle")] public int FeedPerCycle { get; set; } = 1;
+            [JsonProperty("cycleSeconds")] public int CycleSeconds { get; set; }
+            [JsonProperty("yield")] public int Yield { get; set; }
+            [JsonProperty("cost")] public long Cost { get; set; }
+            [JsonProperty("maxCount")] public int MaxCount { get; set; } = 1;
+            [JsonProperty("unlockLevel")] public int UnlockLevel { get; set; } = 1;
         }
 
         private sealed class StaffDto

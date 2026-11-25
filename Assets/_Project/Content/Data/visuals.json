@@ -1,101 +1,418 @@
 {
   "comment": "Liga IDs do jogo a modelos/texturas/sons (caminhos relativos a Assets/ThirdParty). Lido só pelo gerador do Editor.",
   "crops": [
-    { "crop": "alface",  "stages": "Quaternius/Crops/Lettuce_{0}.fbx" },
-    { "crop": "cenoura", "stages": "Quaternius/Crops/Carrot_{0}.fbx" },
-    { "crop": "batata",  "stages": "Quaternius/Crops/Beet_{0}.fbx" },
-    { "crop": "tomate",  "stages": "Quaternius/Crops/Tomato_{0}.fbx" },
-    { "crop": "milho",   "stages": "Quaternius/Crops/Corn_{0}.fbx" }
+    {
+      "crop": "trigo",
+      "stages": "Quaternius/Crops/Wheat_{0}.fbx"
+    },
+    {
+      "crop": "alface",
+      "stages": "Quaternius/Crops/Lettuce_{0}.fbx"
+    },
+    {
+      "crop": "cenoura",
+      "stages": "Quaternius/Crops/Carrot_{0}.fbx"
+    },
+    {
+      "crop": "batata",
+      "stages": "Quaternius/Crops/Beet_{0}.fbx"
+    },
+    {
+      "crop": "tomate",
+      "stages": "Quaternius/Crops/Tomato_{0}.fbx"
+    },
+    {
+      "crop": "milho",
+      "stages": "Quaternius/Crops/Corn_{0}.fbx"
+    }
   ],
   "products": [
-    { "id": "alface",  "model": "Kenney/Food/cabbage.fbx", "height": 0.38 },
-    { "id": "cenoura", "model": "Kenney/Food/carrot.fbx",  "height": 0.430 },
-    { "id": "batata",  "model": "Kenney/Food/beet.fbx",    "height": 0.35 },
-    { "id": "tomate",  "model": "Kenney/Food/tomato.fbx",  "height": 0.290 },
-    { "id": "milho",   "model": "Kenney/Food/corn.fbx",    "height": 0.46 },
-    { "id": "leite",   "model": "Kenney/Food/carton.fbx",  "height": 0.46 },
-    { "id": "queijo",  "model": "Kenney/Food/cheese.fbx",  "height": 0.26 },
-    { "id": "arroz",   "model": "Kenney/Food/bag.fbx",     "height": 0.46 },
-    { "id": "feijao",  "model": "Kenney/Food/can.fbx",     "height": 0.35 }
+    {
+      "id": "alface",
+      "model": "Kenney/Food/cabbage.fbx",
+      "height": 0.38
+    },
+    {
+      "id": "cenoura",
+      "model": "Kenney/Food/carrot.fbx",
+      "height": 0.43
+    },
+    {
+      "id": "batata",
+      "model": "Kenney/Food/beet.fbx",
+      "height": 0.35
+    },
+    {
+      "id": "tomate",
+      "model": "Kenney/Food/tomato.fbx",
+      "height": 0.29
+    },
+    {
+      "id": "milho",
+      "model": "Kenney/Food/corn.fbx",
+      "height": 0.46
+    },
+    {
+      "id": "leite",
+      "model": "Kenney/Food/carton.fbx",
+      "height": 0.46
+    },
+    {
+      "id": "queijo",
+      "model": "Kenney/Food/cheese.fbx",
+      "height": 0.26
+    },
+    {
+      "id": "arroz",
+      "model": "Kenney/Food/bag.fbx",
+      "height": 0.46
+    },
+    {
+      "id": "feijao",
+      "model": "Kenney/Food/can.fbx",
+      "height": 0.35
+    },
+    {
+      "id": "trigo",
+      "model": "Quaternius/Crops/Wheat_Crop.fbx",
+      "height": 0.5
+    },
+    {
+      "id": "ovo",
+      "model": "Kenney/Food/egg.fbx",
+      "height": 0.28
+    },
+    {
+      "id": "la",
+      "model": "builtin:yarn",
+      "height": 0.36
+    }
   ],
   "furniture": [
-    { "id": "banca",     "model": "builtin:wood",  "width": 2.4 },
-    { "id": "geladeira", "model": "Kenney/MiniMarket/freezer.fbx",       "width": 2.4 },
-    { "id": "gondola",   "model": "builtin:metal", "width": 2.4 }
+    {
+      "id": "banca",
+      "model": "builtin:wood",
+      "width": 2.4
+    },
+    {
+      "id": "geladeira",
+      "model": "Kenney/MiniMarket/freezer.fbx",
+      "width": 2.4
+    },
+    {
+      "id": "gondola",
+      "model": "builtin:metal",
+      "width": 2.4
+    }
   ],
-  "cashRegister": { "model": "Kenney/MiniMarket/cash-register.fbx", "width": 1.8 },
+  "cashRegister": {
+    "model": "Kenney/MiniMarket/cash-register.fbx",
+    "width": 1.8
+  },
   "customers": [
-    "Kenney/MiniCharacters/character-female-a.fbx", "Kenney/MiniCharacters/character-female-b.fbx",
-    "Kenney/MiniCharacters/character-female-c.fbx", "Kenney/MiniCharacters/character-female-d.fbx",
-    "Kenney/MiniCharacters/character-female-e.fbx", "Kenney/MiniCharacters/character-female-f.fbx",
-    "Kenney/MiniCharacters/character-male-a.fbx",   "Kenney/MiniCharacters/character-male-b.fbx",
-    "Kenney/MiniCharacters/character-male-c.fbx",   "Kenney/MiniCharacters/character-male-d.fbx",
-    "Kenney/MiniCharacters/character-male-e.fbx",   "Kenney/MiniCharacters/character-male-f.fbx",
+    "Kenney/MiniCharacters/character-female-a.fbx",
+    "Kenney/MiniCharacters/character-female-b.fbx",
+    "Kenney/MiniCharacters/character-female-c.fbx",
+    "Kenney/MiniCharacters/character-female-d.fbx",
+    "Kenney/MiniCharacters/character-female-e.fbx",
+    "Kenney/MiniCharacters/character-female-f.fbx",
+    "Kenney/MiniCharacters/character-male-a.fbx",
+    "Kenney/MiniCharacters/character-male-b.fbx",
+    "Kenney/MiniCharacters/character-male-c.fbx",
+    "Kenney/MiniCharacters/character-male-d.fbx",
+    "Kenney/MiniCharacters/character-male-e.fbx",
+    "Kenney/MiniCharacters/character-male-f.fbx",
     "Kenney/MiniCharacters/character-male-g.fbx"
   ],
   "characterHeight": 1.25,
   "employee": "Kenney/MiniMarket/character-employee.fbx",
   "decor": [
-    { "id": "barn",      "model": "Quaternius/FarmBuildings/Barn.fbx",      "height": 4.5 },
-    { "id": "openbarn",  "model": "Quaternius/FarmBuildings/OpenBarn.fbx",  "height": 3.0 },
-    { "id": "silo",      "model": "Quaternius/FarmBuildings/Silo.fbx",      "height": 6.0 },
-    { "id": "well",      "model": "Quaternius/FarmBuildings/Well.fbx",      "height": 1.8 },
-    { "id": "windmill",  "model": "Quaternius/FarmBuildings/Windmill.fbx",  "height": 7.0 },
-    { "id": "fence",     "model": "Kenney/Nature/fence_simple.fbx",         "height": 0.8 },
-    { "id": "cow",       "model": "Quaternius/FarmAnimals/Cow.fbx",         "height": 1.5, "animation": "Idle" },
-    { "id": "pig",       "model": "Quaternius/FarmAnimals/Pig.fbx",         "height": 0.9, "animation": "Idle" },
-    { "id": "sheep",     "model": "Quaternius/FarmAnimals/Sheep.fbx",       "height": 1.1, "animation": "Idle" },
-    { "id": "tree1",     "model": "Kenney/Nature/tree_default.fbx",         "height": 4.5 },
-    { "id": "tree2",     "model": "Kenney/Nature/tree_oak.fbx",             "height": 5.0 },
-    { "id": "tree3",     "model": "Kenney/Nature/tree_detailed.fbx",        "height": 4.8 },
-    { "id": "tree4",     "model": "Kenney/Nature/tree_fat.fbx",             "height": 4.0 },
-    { "id": "tree5",     "model": "Kenney/Nature/tree_cone.fbx",            "height": 5.5 },
-    { "id": "tree6",     "model": "Kenney/Nature/tree_small.fbx",           "height": 3.0 },
-    { "id": "bush1",     "model": "Kenney/Nature/plant_bush.fbx",           "height": 0.8 },
-    { "id": "bush2",     "model": "Kenney/Nature/plant_bushLarge.fbx",      "height": 1.1 },
-    { "id": "bush3",     "model": "Kenney/Nature/plant_bushDetailed.fbx",   "height": 0.9 },
-    { "id": "flowerR",   "model": "Kenney/Nature/flower_redA.fbx",          "height": 0.45 },
-    { "id": "flowerY",   "model": "Kenney/Nature/flower_yellowA.fbx",       "height": 0.45 },
-    { "id": "flowerP",   "model": "Kenney/Nature/flower_purpleA.fbx",       "height": 0.45 },
-    { "id": "grass",     "model": "Kenney/Nature/grass_large.fbx",          "height": 0.4 },
-    { "id": "rockS1",    "model": "Kenney/Nature/rock_smallA.fbx",          "height": 0.35 },
-    { "id": "rockS2",    "model": "Kenney/Nature/rock_smallB.fbx",          "height": 0.3 },
-    { "id": "stump",     "model": "Kenney/Nature/stump_round.fbx",          "height": 0.5 },
-    { "id": "log",       "model": "Kenney/Nature/log.fbx",                  "height": 0.4 },
-    { "id": "mushrooms", "model": "Kenney/Nature/mushroom_redGroup.fbx",    "height": 0.3 },
-    { "id": "truck",     "model": "Kenney/Cars/delivery.fbx",               "height": 2.4 },
-    { "id": "tractor",   "model": "Kenney/Cars/tractor.fbx",                "height": 2.0 },
-    { "id": "storeFloor","model": "Kenney/MiniMarket/floor.fbx",            "height": 0.0 },
-    { "id": "storeWall", "model": "Kenney/MiniMarket/wall.fbx",             "height": 2.8 },
-    { "id": "storeWindow","model": "Kenney/MiniMarket/wall-window.fbx",     "height": 2.8 },
-    { "id": "storeDoor", "model": "Kenney/MiniMarket/wall-door-rotate.fbx", "height": 2.8 },
-    { "id": "storeCorner","model": "Kenney/MiniMarket/wall-corner.fbx",     "height": 2.8 },
-    { "id": "shelfBoxes","model": "Kenney/MiniMarket/shelf-boxes.fbx",      "height": 2.2 },
-    { "id": "shelfBags", "model": "Kenney/MiniMarket/shelf-bags.fbx",       "height": 2.2 },
-    { "id": "fridgeTall","model": "Kenney/MiniMarket/freezers-standing.fbx","height": 2.3 },
-    { "id": "cart",      "model": "Kenney/MiniMarket/shopping-cart.fbx",    "height": 1.0 },
-    { "id": "bread",     "model": "Kenney/MiniMarket/display-bread.fbx",    "height": 1.3 },
-    { "id": "awning",    "model": "Kenney/CityCommercial/detail-awning-wide.fbx", "height": 1.0 }
+    {
+      "id": "barn",
+      "model": "Quaternius/FarmBuildings/Barn.fbx",
+      "height": 4.5
+    },
+    {
+      "id": "openbarn",
+      "model": "Quaternius/FarmBuildings/OpenBarn.fbx",
+      "height": 3.0
+    },
+    {
+      "id": "silo",
+      "model": "Quaternius/FarmBuildings/Silo.fbx",
+      "height": 6.0
+    },
+    {
+      "id": "well",
+      "model": "Quaternius/FarmBuildings/Well.fbx",
+      "height": 1.8
+    },
+    {
+      "id": "windmill",
+      "model": "Quaternius/FarmBuildings/Windmill.fbx",
+      "height": 7.0
+    },
+    {
+      "id": "fence",
+      "model": "Kenney/Nature/fence_simple.fbx",
+      "height": 0.8
+    },
+    {
+      "id": "cow",
+      "model": "Quaternius/FarmAnimals/Cow.fbx",
+      "height": 1.5,
+      "animation": "Idle"
+    },
+    {
+      "id": "pig",
+      "model": "Quaternius/FarmAnimals/Pig.fbx",
+      "height": 0.9,
+      "animation": "Idle"
+    },
+    {
+      "id": "sheep",
+      "model": "Quaternius/FarmAnimals/Sheep.fbx",
+      "height": 1.1,
+      "animation": "Idle"
+    },
+    {
+      "id": "tree1",
+      "model": "Kenney/Nature/tree_default.fbx",
+      "height": 4.5
+    },
+    {
+      "id": "tree2",
+      "model": "Kenney/Nature/tree_oak.fbx",
+      "height": 5.0
+    },
+    {
+      "id": "tree3",
+      "model": "Kenney/Nature/tree_detailed.fbx",
+      "height": 4.8
+    },
+    {
+      "id": "tree4",
+      "model": "Kenney/Nature/tree_fat.fbx",
+      "height": 4.0
+    },
+    {
+      "id": "tree5",
+      "model": "Kenney/Nature/tree_cone.fbx",
+      "height": 5.5
+    },
+    {
+      "id": "tree6",
+      "model": "Kenney/Nature/tree_small.fbx",
+      "height": 3.0
+    },
+    {
+      "id": "bush1",
+      "model": "Kenney/Nature/plant_bush.fbx",
+      "height": 0.8
+    },
+    {
+      "id": "bush2",
+      "model": "Kenney/Nature/plant_bushLarge.fbx",
+      "height": 1.1
+    },
+    {
+      "id": "bush3",
+      "model": "Kenney/Nature/plant_bushDetailed.fbx",
+      "height": 0.9
+    },
+    {
+      "id": "flowerR",
+      "model": "Kenney/Nature/flower_redA.fbx",
+      "height": 0.45
+    },
+    {
+      "id": "flowerY",
+      "model": "Kenney/Nature/flower_yellowA.fbx",
+      "height": 0.45
+    },
+    {
+      "id": "flowerP",
+      "model": "Kenney/Nature/flower_purpleA.fbx",
+      "height": 0.45
+    },
+    {
+      "id": "grass",
+      "model": "Kenney/Nature/grass_large.fbx",
+      "height": 0.4
+    },
+    {
+      "id": "rockS1",
+      "model": "Kenney/Nature/rock_smallA.fbx",
+      "height": 0.35
+    },
+    {
+      "id": "rockS2",
+      "model": "Kenney/Nature/rock_smallB.fbx",
+      "height": 0.3
+    },
+    {
+      "id": "stump",
+      "model": "Kenney/Nature/stump_round.fbx",
+      "height": 0.5
+    },
+    {
+      "id": "log",
+      "model": "Kenney/Nature/log.fbx",
+      "height": 0.4
+    },
+    {
+      "id": "mushrooms",
+      "model": "Kenney/Nature/mushroom_redGroup.fbx",
+      "height": 0.3
+    },
+    {
+      "id": "truck",
+      "model": "Kenney/Cars/delivery.fbx",
+      "height": 2.4
+    },
+    {
+      "id": "tractor",
+      "model": "Kenney/Cars/tractor.fbx",
+      "height": 2.0
+    },
+    {
+      "id": "storeFloor",
+      "model": "Kenney/MiniMarket/floor.fbx",
+      "height": 0.0
+    },
+    {
+      "id": "storeWall",
+      "model": "Kenney/MiniMarket/wall.fbx",
+      "height": 2.8
+    },
+    {
+      "id": "storeWindow",
+      "model": "Kenney/MiniMarket/wall-window.fbx",
+      "height": 2.8
+    },
+    {
+      "id": "storeDoor",
+      "model": "Kenney/MiniMarket/wall-door-rotate.fbx",
+      "height": 2.8
+    },
+    {
+      "id": "storeCorner",
+      "model": "Kenney/MiniMarket/wall-corner.fbx",
+      "height": 2.8
+    },
+    {
+      "id": "shelfBoxes",
+      "model": "Kenney/MiniMarket/shelf-boxes.fbx",
+      "height": 2.2
+    },
+    {
+      "id": "shelfBags",
+      "model": "Kenney/MiniMarket/shelf-bags.fbx",
+      "height": 2.2
+    },
+    {
+      "id": "fridgeTall",
+      "model": "Kenney/MiniMarket/freezers-standing.fbx",
+      "height": 2.3
+    },
+    {
+      "id": "cart",
+      "model": "Kenney/MiniMarket/shopping-cart.fbx",
+      "height": 1.0
+    },
+    {
+      "id": "bread",
+      "model": "Kenney/MiniMarket/display-bread.fbx",
+      "height": 1.3
+    },
+    {
+      "id": "awning",
+      "model": "Kenney/CityCommercial/detail-awning-wide.fbx",
+      "height": 1.0
+    },
+    {
+      "id": "coop",
+      "model": "Quaternius/FarmBuildings/ChickenCoop.fbx",
+      "height": 2.2
+    }
   ],
   "particles": {
-    "star": "Kenney/Particles/star_05.png", "circle": "Kenney/Particles/circle_05.png",
-    "dirt": "Kenney/Particles/dirt_01.png", "smoke": "Kenney/Particles/smoke_04.png",
-    "spark": "Kenney/Particles/spark_05.png", "light": "Kenney/Particles/light_01.png"
+    "star": "Kenney/Particles/star_05.png",
+    "circle": "Kenney/Particles/circle_05.png",
+    "dirt": "Kenney/Particles/dirt_01.png",
+    "smoke": "Kenney/Particles/smoke_04.png",
+    "spark": "Kenney/Particles/spark_05.png",
+    "light": "Kenney/Particles/light_01.png"
   },
   "sounds": [
-    { "id": "click",   "clip": "Kenney/Sounds/click_002.ogg",        "volume": 0.6 },
-    { "id": "plant",   "clip": "Kenney/Sounds/drop_002.ogg",         "volume": 0.8 },
-    { "id": "water",   "clip": "Kenney/Sounds/select_001.ogg",       "volume": 0.6 },
-    { "id": "harvest", "clip": "Kenney/Sounds/pluck_001.ogg",        "volume": 0.9 },
-    { "id": "sale",    "clip": "Kenney/Sounds/maximize_006.ogg",     "volume": 0.7 },
-    { "id": "scan",    "clip": "Kenney/Sounds/bong_001.ogg",         "volume": 0.5 },
-    { "id": "buy",     "clip": "Kenney/Sounds/confirmation_001.ogg", "volume": 0.8 },
-    { "id": "error",   "clip": "Kenney/Sounds/error_004.ogg",        "volume": 0.6 }
+    {
+      "id": "click",
+      "clip": "Kenney/Sounds/click_002.ogg",
+      "volume": 0.6
+    },
+    {
+      "id": "plant",
+      "clip": "Kenney/Sounds/drop_002.ogg",
+      "volume": 0.8
+    },
+    {
+      "id": "water",
+      "clip": "Kenney/Sounds/select_001.ogg",
+      "volume": 0.6
+    },
+    {
+      "id": "harvest",
+      "clip": "Kenney/Sounds/pluck_001.ogg",
+      "volume": 0.9
+    },
+    {
+      "id": "sale",
+      "clip": "Kenney/Sounds/maximize_006.ogg",
+      "volume": 0.7
+    },
+    {
+      "id": "scan",
+      "clip": "Kenney/Sounds/bong_001.ogg",
+      "volume": 0.5
+    },
+    {
+      "id": "buy",
+      "clip": "Kenney/Sounds/confirmation_001.ogg",
+      "volume": 0.8
+    },
+    {
+      "id": "error",
+      "clip": "Kenney/Sounds/error_004.ogg",
+      "volume": 0.6
+    }
   ],
   "ui": {
     "font": "Kenney/UI/Font/KenneyFuture.ttf",
-    "buttonGreen": "Kenney/UI/Sprites/button_green.png", "buttonYellow": "Kenney/UI/Sprites/button_yellow.png",
-    "buttonRed": "Kenney/UI/Sprites/button_red.png", "buttonBlue": "Kenney/UI/Sprites/button_blue.png",
-    "buttonGrey": "Kenney/UI/Sprites/button_grey.png", "panel": "Kenney/UI/Sprites/panel_grey.png"
-  }
+    "buttonGreen": "Kenney/UI/Sprites/button_green.png",
+    "buttonYellow": "Kenney/UI/Sprites/button_yellow.png",
+    "buttonRed": "Kenney/UI/Sprites/button_red.png",
+    "buttonBlue": "Kenney/UI/Sprites/button_blue.png",
+    "buttonGrey": "Kenney/UI/Sprites/button_grey.png",
+    "panel": "Kenney/UI/Sprites/panel_grey.png"
+  },
+  "animals": [
+    {
+      "id": "galinha",
+      "model": "Kenney/CubePets/animal-chick.fbx",
+      "height": 0.7,
+      "animation": "idle"
+    },
+    {
+      "id": "vaca",
+      "model": "Quaternius/FarmAnimals/Cow.fbx",
+      "height": 1.5,
+      "animation": "Idle"
+    },
+    {
+      "id": "ovelha",
+      "model": "Quaternius/FarmAnimals/Sheep.fbx",
+      "height": 1.1,
+      "animation": "Idle"
+    }
+  ]
 }

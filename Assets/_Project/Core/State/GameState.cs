@@ -46,6 +46,25 @@ namespace Game.Core.State
 
         /// <summary>Quantas parcelas extras já foram compradas (n da curva de custo).</summary>
         public int PlotsBought { get; set; }
+
+        /// <summary>Sementes em estoque por cultura (compradas na vendinha; plantar gasta 1).</summary>
+        public Dictionary<string, int> Seeds { get; set; } = new Dictionary<string, int>();
+
+        /// <summary>Animais do jogador (ordem = ID).</summary>
+        public List<AnimalState> Animals { get; set; } = new List<AnimalState>();
+    }
+
+    public sealed class AnimalState
+    {
+        public string TypeId { get; set; }
+
+        /// <summary>Quando foi alimentado (início do ciclo atual).</summary>
+        public long FedAtMs { get; set; }
+
+        /// <summary>Quando a produção fica pronta; 0 = com fome (esperando comida).</summary>
+        public long ReadyAtMs { get; set; }
+
+        public bool IsHungry => ReadyAtMs == 0;
     }
 
     public sealed class PlotState

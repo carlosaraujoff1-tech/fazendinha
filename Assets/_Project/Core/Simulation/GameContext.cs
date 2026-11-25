@@ -53,6 +53,10 @@ namespace Game.Core.Simulation
             for (int i = 0; i < catalog.Economy.InitialPlots; i++) state.Farm.Plots.Add(new PlotState());
             foreach (var furnitureId in catalog.Store.InitialFurniture ?? new string[0])
                 state.Store.Shelves.Add(new ShelfState { FurnitureId = furnitureId });
+            foreach (var kv in catalog.Economy.StartingSeeds ?? new System.Collections.Generic.Dictionary<string, int>())
+                if (kv.Value > 0) state.Farm.Seeds[kv.Key] = kv.Value;
+            foreach (var animalId in catalog.Economy.StartingAnimals ?? new string[0])
+                state.Farm.Animals.Add(new AnimalState { TypeId = animalId });
             state.Store.Rng.Seed = (ulong)now;
             state.Store.LastStoreTickMs = now;
             state.Store.NextSpawnAtMs = now + (long)(catalog.Store.SpawnIntervalSeconds * 1000);

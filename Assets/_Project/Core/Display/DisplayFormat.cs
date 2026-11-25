@@ -19,6 +19,13 @@ namespace Game.Core.Display
             { CommandErrors.AlreadyReady, "Já está pronto para colher" },
             { CommandErrors.AlreadyWatered, "Já foi regado" },
             { CommandErrors.MaxReached, "Limite atingido" },
+            { CommandErrors.NoSeeds, "Sem sementes: compre na vendinha" },
+            { CommandErrors.NoFeed, "Sem comida: colha trigo ou milho" },
+            { CommandErrors.AlreadyFed, "Já está alimentado" },
+            { CommandErrors.ShelfFull, "Prateleira cheia" },
+            { CommandErrors.WrongCategory, "Esse produto não vai nesse móvel" },
+            { CommandErrors.ShelfHasOtherProduct, "Prateleira com outro produto" },
+            { CommandErrors.NoCustomer, "Ninguém na fila" },
         };
 
         /// <summary>Texto amigável para um código de erro de comando.</summary>

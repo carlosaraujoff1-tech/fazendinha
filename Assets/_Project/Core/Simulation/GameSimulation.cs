@@ -8,10 +8,12 @@ namespace Game.Core.Simulation
     /// <summary>Resumo para a tela "Bem-vindo de volta".</summary>
     public readonly struct OfflineReturned : IGameEvent
     {
-        public OfflineReturned(long awayMs, long creditedMs, int plotsReady, int deliveries, long unitsExpired)
+        public OfflineReturned(long awayMs, long creditedMs, int plotsReady, int deliveries, long unitsExpired, int animalsReady = 0)
         {
             AwayMs = awayMs; CreditedMs = creditedMs; PlotsReady = plotsReady; Deliveries = deliveries; UnitsExpired = unitsExpired;
+            AnimalsReady = animalsReady;
         }
+        public int AnimalsReady { get; }
         public long AwayMs { get; }
         /// <summary>Quanto do tempo fora contou (no máximo o limite offline, 4 h).</summary>
         public long CreditedMs { get; }
@@ -70,8 +72,10 @@ namespace Game.Core.Simulation
             {
                 int ready = 0;
                 foreach (var plot in state.Farm.Plots) if (FarmRules.GetPhase(plot, now) == PlotPhase.Ready) ready++;
+                int animalsReady = 0;
+                foreach (var a in state.Farm.Animals) if (Animals.AnimalRules.GetPhase(a, now) == Animals.AnimalPhase.Ready) animalsReady++;
                 ctx.Events.Publish(new OfflineReturned(gap, credited, ready, ordersBefore - state.Supplier.Orders.Count,
-                    state.Stats.UnitsExpired - expiredBefore));
+                    state.Stats.UnitsExpired - expiredBefore, animalsReady));
             }
         }
     }

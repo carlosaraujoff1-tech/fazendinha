@@ -22,7 +22,7 @@ namespace Game.Editor.Art
         private bool IsOurs => assetPath.StartsWith(Root);
 
         private bool IsAnimated =>
-            assetPath.Contains("/FarmAnimals/") || assetPath.Contains("/MiniCharacters/") ||
+            assetPath.Contains("/FarmAnimals/") || assetPath.Contains("/MiniCharacters/") || assetPath.Contains("/CubePets/") ||
             System.IO.Path.GetFileName(assetPath).StartsWith("character-");
 
         private void OnPreprocessModel()

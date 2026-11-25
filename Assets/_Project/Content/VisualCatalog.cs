@@ -56,8 +56,9 @@ namespace Game.Content
         [Tooltip("Personagens animados (Animator com speed/pick/yes/no).")] public List<GameObject> customers = new List<GameObject>();
         public GameObject employee;
 
-        [Header("Cenário")]
+        [Header("Cenário e animais")]
         public List<IdPrefab> decor = new List<IdPrefab>();
+        [Tooltip("Modelo por tipo de animal do jogo (galinha, vaca, ovelha).")] public List<IdPrefab> animals = new List<IdPrefab>();
 
         [Header("Efeitos e som")]
         public List<IdPrefab> effects = new List<IdPrefab>();
@@ -73,7 +74,7 @@ namespace Game.Content
         public Sprite panel;
 
         private Dictionary<string, CropVisual> _crops;
-        private Dictionary<string, GameObject> _products, _decor, _effects;
+        private Dictionary<string, GameObject> _products, _decor, _effects, _animals;
         private Dictionary<string, FurnitureVisual> _furniture;
         private Dictionary<string, IdSound> _sounds;
 
@@ -85,6 +86,7 @@ namespace Game.Content
             _products = ToMap(products);
             _decor = ToMap(decor);
             _effects = ToMap(effects);
+            _animals = ToMap(animals);
             _furniture = new Dictionary<string, FurnitureVisual>();
             foreach (var f in furniture) if (f != null && !string.IsNullOrEmpty(f.furnitureId)) _furniture[f.furnitureId] = f;
             _sounds = new Dictionary<string, IdSound>();
@@ -109,6 +111,7 @@ namespace Game.Content
         public GameObject Product(string productId) { Index(); return Get(_products, productId); }
         public GameObject Decor(string id) { Index(); return Get(_decor, id); }
         public GameObject Effect(string id) { Index(); return Get(_effects, id); }
+        public GameObject Animal(string animalTypeId) { Index(); return Get(_animals, animalTypeId); }
 
         public FurnitureVisual Furniture(string furnitureId)
         {

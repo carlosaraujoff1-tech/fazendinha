@@ -57,10 +57,13 @@ namespace Game.Presentation.UI
             foreach (var (crop, button) in _buttons)
             {
                 bool unlocked = FarmRules.IsCropUnlocked(crop, root.State);
-                string text = unlocked
-                    ? $"{crop.Name}   {DisplayFormat.Duration(crop.GrowSeconds * 1000L)}   {crop.SeedCost} moedas   rende {crop.Yield}"
-                    : $"{crop.Name}  ·  nível {crop.UnlockLevel}";
-                UiFactory.SetButton(button, text, unlocked && root.State.Wallet.Coins >= crop.SeedCost);
+                int seeds = FarmRules.SeedsOf(root.State, crop.Id);
+                string time = DisplayFormat.Duration(crop.GrowSeconds * 1000L);
+                string text = !unlocked ? $"{crop.Name}  ·  nível {crop.UnlockLevel}"
+                    : seeds > 0 ? $"{crop.Name}   {seeds} sementes   {time}   rende {crop.Yield}"
+                    : $"{crop.Name}   comprar e plantar ({crop.SeedCost})   {time}";
+                bool can = unlocked && (seeds > 0 || root.State.Wallet.Coins >= crop.SeedCost);
+                UiFactory.SetButton(button, text, can, seeds > 0 ? ButtonStyle.Green : ButtonStyle.Yellow);
             }
             _panel.SetActive(true);
         }
@@ -75,14 +78,17 @@ namespace Game.Presentation.UI
         {
             if (_plotIndex < 0) return;
             int plot = _plotIndex;
-            if (!GameRoot.Instance.Execute(new PlantCommand(plot, crop.Id)).IsSuccess) return;
+            var root = GameRoot.Instance;
+            // Sem semente no estoque: compra 1 na vendinha e já planta (atalho).
+            if (FarmRules.SeedsOf(root.State, crop.Id) < 1 && !root.Execute(new BuySeedsCommand(crop.Id, 1)).IsSuccess) return;
+            if (!root.Execute(new PlantCommand(plot, crop.Id)).IsSuccess) return;
             Close();
             var farm = FindFirstObjectByType<Game.Presentation.Farm.FarmView>();
             if (farm != null)
             {
                 var pos = farm.PlotWorldPosition(plot);
                 Game.Presentation.Effects.FxPlayer.Play("plant", pos + Vector3.up * 0.2f);
-                FloatingTextLayer.Show(pos, $"-{crop.SeedCost} moedas", new Color(1f, 0.85f, 0.4f));
+                FloatingTextLayer.Show(pos, $"Plantou {crop.Name}!", new Color(0.75f, 1f, 0.55f));
             }
             Game.Presentation.Effects.SoundPlayer.Play("plant");
         }

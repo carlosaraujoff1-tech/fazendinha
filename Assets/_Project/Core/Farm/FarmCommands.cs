@@ -27,6 +27,21 @@ namespace Game.Core.Farm
 
     public sealed class BuyPlotCommand : ICommand { }
 
+    /// <summary>Compra sementes na vendinha (vão para o estoque de sementes).</summary>
+    public sealed class BuySeedsCommand : ICommand
+    {
+        public BuySeedsCommand(string cropId, int quantity) { CropId = cropId; Quantity = quantity; }
+        public string CropId { get; }
+        public int Quantity { get; }
+    }
+
+    public readonly struct SeedsChanged : IGameEvent
+    {
+        public SeedsChanged(string cropId, int total) { CropId = cropId; Total = total; }
+        public string CropId { get; }
+        public int Total { get; }
+    }
+
     public readonly struct PlotChanged : IGameEvent
     {
         public PlotChanged(int plotIndex) { PlotIndex = plotIndex; }
@@ -60,14 +75,16 @@ namespace Game.Core.Farm
             if (!plot.IsEmpty) return CommandResult.Fail(CommandErrors.PlotOccupied);
             if (!ctx.Catalog.TryGetCrop(c.CropId, out var crop)) return CommandResult.Fail(CommandErrors.UnknownCrop);
             if (!FarmRules.IsCropUnlocked(crop, ctx.State)) return CommandResult.Fail(CommandErrors.Locked);
-            if (crop.SeedCost > 0 && !ctx.Wallet.CanAffordCoins(crop.SeedCost)) return CommandResult.Fail(CommandErrors.InsufficientCoins);
+            if (FarmRules.SeedsOf(ctx.State, crop.Id) < 1) return CommandResult.Fail(CommandErrors.NoSeeds);
             return CommandResult.Ok();
         }
 
         public void Apply(GameContext ctx, PlantCommand c)
         {
             var crop = ctx.Catalog.GetCrop(c.CropId);
-            if (crop.SeedCost > 0) ctx.Wallet.TrySpendCoins(crop.SeedCost, "semente:" + crop.Id);
+            int left = FarmRules.SeedsOf(ctx.State, crop.Id) - 1;
+            ctx.State.Farm.Seeds[crop.Id] = left;
+            ctx.Events.Publish(new SeedsChanged(crop.Id, left));
             var plot = ctx.State.Farm.Plots[c.PlotIndex];
             plot.CropId = crop.Id;
             plot.PlantedAtMs = ctx.NowMs;
@@ -150,6 +167,28 @@ namespace Game.Core.Farm
             int index = ctx.State.Farm.Plots.Count - 1;
             ctx.Events.Publish(new PlotBought(index, cost));
             ctx.Events.Publish(new PlotChanged(index));
+        }
+    }
+
+    public sealed class BuySeedsHandler : ICommandHandler<BuySeedsCommand>
+    {
+        public CommandResult Validate(GameContext ctx, BuySeedsCommand c)
+        {
+            if (!ctx.Catalog.TryGetCrop(c.CropId, out var crop)) return CommandResult.Fail(CommandErrors.UnknownCrop);
+            if (c.Quantity <= 0 || c.Quantity > 999) return CommandResult.Fail(CommandErrors.InvalidArgument);
+            if (!FarmRules.IsCropUnlocked(crop, ctx.State)) return CommandResult.Fail(CommandErrors.Locked);
+            long cost = crop.SeedCost * c.Quantity;
+            return cost == 0 || ctx.Wallet.CanAffordCoins(cost) ? CommandResult.Ok() : CommandResult.Fail(CommandErrors.InsufficientCoins);
+        }
+
+        public void Apply(GameContext ctx, BuySeedsCommand c)
+        {
+            var crop = ctx.Catalog.GetCrop(c.CropId);
+            long cost = crop.SeedCost * c.Quantity;
+            if (cost > 0) ctx.Wallet.TrySpendCoins(cost, "semente:" + crop.Id);
+            int total = FarmRules.SeedsOf(ctx.State, crop.Id) + c.Quantity;
+            ctx.State.Farm.Seeds[crop.Id] = total;
+            ctx.Events.Publish(new SeedsChanged(crop.Id, total));
         }
     }
 }

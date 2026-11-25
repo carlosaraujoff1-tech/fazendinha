@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Game.Core.Catalog
 {
     /// <summary>Produto vendável (hortifruti, laticínios, mercearia...). Imutável depois de criado.</summary>
@@ -70,5 +72,11 @@ namespace Game.Core.Catalog
         public int InitialPlots { get; set; } = 4;
         public int MaxPlots { get; set; } = 20;
         public long PlotBaseCost { get; set; } = 50;
+
+        /// <summary>Sementes de presente no começo do jogo (cultura → quantidade).</summary>
+        public Dictionary<string, int> StartingSeeds { get; set; } = new Dictionary<string, int>();
+
+        /// <summary>Animais de presente no começo do jogo (IDs de tipo).</summary>
+        public string[] StartingAnimals { get; set; } = new string[0];
     }
 }

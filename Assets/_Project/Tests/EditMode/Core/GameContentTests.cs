@@ -53,7 +53,9 @@ namespace Game.Tests.Core
                 // "Produzir na fazenda custa ~25% de P": semente / rendimento.
                 Assert.That((double)seed / yield / price, Is.InRange(0.2, 0.3), id);
             }
-            Assert.AreEqual(5, c.GetCrop("milho").UnlockLevel);
+            Assert.AreEqual(1, c.GetCrop("milho").UnlockLevel, "milho liberado desde o início (comida dos animais)");
+            Assert.AreEqual(4, c.Economy.StartingSeeds["alface"]);
+            CollectionAssert.AreEqual(new[] { "galinha" }, c.Economy.StartingAnimals);
             Assert.AreEqual("Alface", c.GetCrop("alface").Name);
             Assert.AreEqual("Tomate", c.GetProduct("tomate").Name);
             Assert.AreEqual(14400, c.Economy.OfflineFarmCapSeconds);

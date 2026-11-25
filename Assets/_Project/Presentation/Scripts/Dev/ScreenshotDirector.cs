@@ -58,6 +58,7 @@ namespace Game.Presentation.Dev
             state.Wallet.Coins = 50_000;
             state.Progress.Level = 5;
             for (int i = 0; i < 6; i++) root.Execute(new BuyPlotCommand());
+            foreach (var c in root.Catalog.Crops) state.Farm.Seeds[c.Id] = 20;
             var crops = new System.Collections.Generic.List<Game.Core.Catalog.CropDef>(root.Catalog.Crops);
             long now = ctx.NowMs;
             for (int i = 0; i < state.Farm.Plots.Count; i++)
@@ -86,6 +87,14 @@ namespace Game.Presentation.Dev
                     if (root.Execute(new RestockCommand(s, p.Id, units)).IsSuccess) break;
                 }
             }
+            // Animais: compra vaca e ovelha, alimenta todos; a galinha já fica pronta, uma ovelha com fome.
+            root.Execute(new Game.Core.Animals.BuyAnimalCommand("vaca"));
+            root.Execute(new Game.Core.Animals.BuyAnimalCommand("vaca"));
+            root.Execute(new Game.Core.Animals.BuyAnimalCommand("ovelha"));
+            root.Execute(new Game.Core.Animals.BuyAnimalCommand("galinha"));
+            for (int i = 0; i < state.Farm.Animals.Count - 1; i++) root.Execute(new Game.Core.Animals.FeedAnimalCommand(i));
+            state.Farm.Animals[0].ReadyAtMs = ctx.NowMs;
+
             root.Catalog.Store.SpawnIntervalSeconds = 1.2;
             state.Store.NextSpawnAtMs = ctx.NowMs;
 
@@ -113,6 +122,25 @@ namespace Game.Presentation.Dev
                 if (FarmRules.GetPhase(state.Farm.Plots[i], ctx.NowMs) == PlotPhase.Ready) { farmInteraction.HandlePlot(i); break; }
             yield return new WaitForSeconds(0.25f);
             yield return Shot("05_colheita_efeito");
+
+            // ---------- Animais e vendinha ----------
+            area.Show(GameArea.Farm);
+            cam.FocusOn(new Vector3(-10f, 0, -0.5f));
+            cam.SetZoom(15f);
+            yield return new WaitForSeconds(1.2f);
+            yield return Shot("10_animais");
+            var menusFarm = FindFirstObjectByType<StoreMenus>();
+            menusFarm?.OpenSeedShop();
+            yield return new WaitForSeconds(0.5f);
+            yield return Shot("11_vendinha_sementes");
+            menusFarm?.OpenAnimals();
+            yield return new WaitForSeconds(0.5f);
+            yield return Shot("12_menu_animais");
+            menusFarm?.Close();
+            cam.FocusOn(new Vector3(9f, 0, 3f));
+            cam.SetZoom(14f);
+            yield return new WaitForSeconds(0.8f);
+            yield return Shot("13_vendinha_predio");
 
             // ---------- Loja ----------
             area.Show(GameArea.Store);

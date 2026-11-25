@@ -11,7 +11,14 @@
     "maxSupplierOrderUnits": 200,
     "initialPlots": 4,
     "maxPlots": 20,
-    "plotBaseCost": 50
+    "plotBaseCost": 50,
+    "startingSeeds": {
+      "alface": 4,
+      "trigo": 4
+    },
+    "startingAnimals": [
+      "galinha"
+    ]
   },
   "products": [
     {"id": "alface", "name": "Alface", "category": "hortifruti", "referencePrice": 10, "shelfLifeSeconds": 21600},
@@ -19,17 +26,21 @@
     {"id": "batata", "name": "Batata", "category": "hortifruti", "referencePrice": 18, "shelfLifeSeconds": 86400},
     {"id": "tomate", "name": "Tomate", "category": "hortifruti", "referencePrice": 24, "shelfLifeSeconds": 28800},
     {"id": "milho", "name": "Milho", "category": "hortifruti", "referencePrice": 30, "shelfLifeSeconds": 43200},
+    {"id": "trigo", "name": "Trigo", "category": "hortifruti", "referencePrice": 5, "shelfLifeSeconds": 172800},
     {"id": "leite", "name": "Leite", "category": "laticinios", "referencePrice": 12, "shelfLifeSeconds": 172800},
     {"id": "queijo", "name": "Queijo", "category": "laticinios", "referencePrice": 28, "shelfLifeSeconds": 345600},
     {"id": "arroz", "name": "Arroz", "category": "mercearia", "referencePrice": 20, "shelfLifeSeconds": 0},
-    {"id": "feijao", "name": "Feijão", "category": "mercearia", "referencePrice": 16, "shelfLifeSeconds": 0}
+    {"id": "feijao", "name": "Feijão", "category": "mercearia", "referencePrice": 16, "shelfLifeSeconds": 0},
+    {"id": "ovo", "name": "Ovo", "category": "laticinios", "referencePrice": 12, "shelfLifeSeconds": 259200},
+    {"id": "la", "name": "Lã", "category": "mercearia", "referencePrice": 30, "shelfLifeSeconds": 0}
   ],
   "crops": [
+    {"id": "trigo", "name": "Trigo", "product": "trigo", "growSeconds": 90, "seedCost": 6, "yield": 6, "unlockLevel": 1},
     {"id": "alface", "name": "Alface", "product": "alface", "growSeconds": 60, "seedCost": 10, "yield": 4, "unlockLevel": 1},
     {"id": "cenoura", "name": "Cenoura", "product": "cenoura", "growSeconds": 180, "seedCost": 18, "yield": 5, "unlockLevel": 1},
     {"id": "batata", "name": "Batata", "product": "batata", "growSeconds": 480, "seedCost": 27, "yield": 6, "unlockLevel": 1},
     {"id": "tomate", "name": "Tomate", "product": "tomate", "growSeconds": 900, "seedCost": 36, "yield": 6, "unlockLevel": 1},
-    {"id": "milho", "name": "Milho", "product": "milho", "growSeconds": 1800, "seedCost": 60, "yield": 8, "unlockLevel": 5}
+    {"id": "milho", "name": "Milho", "product": "milho", "growSeconds": 1800, "seedCost": 60, "yield": 8, "unlockLevel": 1}
   ],
   "customerTypes": [
     {"id": "economico", "name": "Econômico", "a": 0.0, "b": 0.2, "weight": 50, "patienceSeconds": 45},
@@ -65,5 +76,10 @@
   },
   "staff": [
     {"id": "caixa", "name": "Caixa", "role": "Cashier", "salary": 60, "hireCost": 150, "secondsPerAction": 1.5, "maxHired": 1}
+  ],
+  "animals": [
+    {"id": "galinha", "name": "Galinha", "product": "ovo", "feed": ["trigo", "milho"], "feedPerCycle": 2, "cycleSeconds": 120, "yield": 3, "cost": 80, "maxCount": 6},
+    {"id": "vaca", "name": "Vaca", "product": "leite", "feed": ["trigo", "milho"], "feedPerCycle": 3, "cycleSeconds": 300, "yield": 4, "cost": 300, "maxCount": 4},
+    {"id": "ovelha", "name": "Ovelha", "product": "la", "feed": ["trigo"], "feedPerCycle": 3, "cycleSeconds": 480, "yield": 2, "cost": 250, "maxCount": 4}
   ]
 }
