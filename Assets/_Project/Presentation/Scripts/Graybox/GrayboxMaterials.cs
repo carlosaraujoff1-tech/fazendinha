@@ -22,9 +22,13 @@ namespace Game.Presentation.Graybox
                 if (visuals != null && visuals.baseLit != null) _template = visuals.baseLit;
                 else
                 {
-                    var probe = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    _template = probe.GetComponent<Renderer>().sharedMaterial;
-                    Object.Destroy(probe);
+                    // Último recurso: shader URP Lit (está no build porque o chão/piso usam). Nunca o material
+                    // padrão de CreatePrimitive, que não vai para o Android (rosa).
+                    Debug.LogWarning("[Visuals] baseLit ausente; criando material a partir do shader URP Lit.");
+                    var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Universal Render Pipeline/Simple Lit");
+                    _template = new Material(shader);
+                    _template.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
+                    _template.SetFloat("_SpecularHighlights", 0f);
                 }
             }
             mat = new Material(_template) { enableInstancing = true };

@@ -21,7 +21,8 @@ namespace Game.Editor.Art
         public const string OutDir = "Assets/_Project/Presentation/Prefabs/Generated";
         public const string MaterialsDir = "Assets/_Project/Presentation/Materials";
         public const string TexturesDir = "Assets/_Project/Presentation/Textures";
-        public const string CatalogPath = OutDir + "/VisualCatalog.asset";
+        // Em Resources: sempre vai no build e pode ser carregado mesmo se a referência da cena falhar.
+        public const string CatalogPath = "Assets/_Project/Presentation/Resources/VisualCatalog.asset";
         private const string ThirdParty = "Assets/ThirdParty/";
 
         // Tamanhos-alvo em metros (1 unidade = 1 m; parcela = 1,6 m).
@@ -50,6 +51,7 @@ namespace Game.Editor.Art
             foreach (var d in new[] { "Crops", "Products", "Furniture", "Characters", "Decor", "Effects", "Animators" })
                 Directory.CreateDirectory($"{OutDir}/{d}");
             Directory.CreateDirectory(MaterialsDir);
+            Directory.CreateDirectory(Path.GetDirectoryName(CatalogPath));
 
             var catalog = AssetDatabase.LoadAssetAtPath<VisualCatalog>(CatalogPath);
             if (catalog == null)

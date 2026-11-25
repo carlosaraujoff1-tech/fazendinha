@@ -34,8 +34,15 @@ namespace Game.Presentation
 
         public GameContext Context { get; private set; }
 
-        /// <summary>Prefabs visuais por ID (pode ser null: tudo cai no gray box).</summary>
-        public VisualCatalog Visuals => visuals;
+        /// <summary>Prefabs visuais por ID. Se a referência da cena faltar, carrega de Resources.</summary>
+        public VisualCatalog Visuals
+        {
+            get
+            {
+                if (visuals == null) visuals = Resources.Load<VisualCatalog>("VisualCatalog");
+                return visuals;
+            }
+        }
         public CommandExecutor Commands { get; private set; }
         public IEventBus Events => Context.Events;
         public GameCatalog Catalog => Context.Catalog;
@@ -56,6 +63,7 @@ namespace Game.Presentation
                 return;
             }
             Instance = this;
+            LogVisualsDiagnostics();
 
             var catalog = ContentLoader.LoadCatalog(catalogJson);
             var clock = new SystemClock();
@@ -68,6 +76,21 @@ namespace Game.Presentation
             // O primeiro Tick acontece antes da UI existir: guarda o resumo para a tela "Bem-vindo de volta".
             using (Context.Events.Subscribe<OfflineReturned>(e => PendingWelcome = e)) GameSimulation.Tick(Context);
             _nextAutosave = Time.unscaledTime + autosaveIntervalSeconds;
+        }
+
+        private void LogVisualsDiagnostics()
+        {
+            bool fromScene = visuals != null;
+            var v = Visuals;
+            if (v == null)
+            {
+                Debug.LogError("[Visuals] Catálogo visual NÃO encontrado (cena nem Resources): tudo cairá no gray box.");
+                return;
+            }
+            Debug.Log($"[Visuals] Catálogo OK (origem: {(fromScene ? "cena" : "Resources")}): culturas={v.crops.Count}, " +
+                      $"produtos={v.products.Count}, móveis={v.furniture.Count}, clientes={v.customers.Count}, " +
+                      $"efeitos={v.effects.Count}, sons={v.sounds.Count}, soil={(v.soil != null)}, baseLit={(v.baseLit != null)}, " +
+                      $"fonte={(v.font != null)}, botão={(v.buttonGreen != null)}, painel={(v.panel != null)}");
         }
 
         private GameState LoadOrCreate(AtomicFileSaveStore store, GameCatalog catalog, IClock clock)
