@@ -38,7 +38,7 @@ namespace Game.Editor
         // Áreas onde o cenário aleatório não entra (x0, z0, x1, z1).
         private static readonly List<Rect> Reserved = new List<Rect>();
 
-        private static Material _wood, _plaster, _plasterTint, _gravel, _tiles, _glass, _metal, _lightPanel, _green, _dirt;
+        private static Material _wood, _plaster, _plasterTint, _gravel, _tiles, _glass, _metal, _lightPanel, _green, _dirt, _leaves, _bark;
 
         [MenuItem("Fazenda/Gerar cena Main")]
         public static void GenerateMain()
@@ -154,7 +154,9 @@ namespace Game.Editor
 
         private static void CreateMaterials()
         {
-            _wood = VisualCatalogGenerator.PbrMaterial("WoodPlanks", "brown_planks_05", new Vector2(1, 1), Color.white, 0.12f);
+            _wood = VisualCatalogGenerator.PbrMaterial("WoodPlanks", "brown_planks_05", new Vector2(1, 1), new Color(0.78f, 0.56f, 0.38f), 0.12f);
+            _leaves = VisualCatalogGenerator.LitMaterial("TreeLeaves", new Color(0.22f, 0.42f, 0.16f), null, Vector2.one, null, 0.05f, false);
+            _bark = VisualCatalogGenerator.LitMaterial("TreeBark", new Color(0.36f, 0.26f, 0.18f), null, Vector2.one, null, 0.05f, false);
             _plaster = VisualCatalogGenerator.PbrMaterial("Plaster", "plaster001", new Vector2(3, 1), new Color(0.96f, 0.94f, 0.9f), 0.08f);
             _plasterTint = VisualCatalogGenerator.PbrMaterial("PlasterBarn", "plaster001", new Vector2(2, 1), new Color(0.72f, 0.28f, 0.22f), 0.08f);
             _gravel = VisualCatalogGenerator.PbrMaterial("Gravel", "gravel_ground_01", new Vector2(2, 20), new Color(0.95f, 0.92f, 0.86f), 0.05f);
@@ -474,7 +476,24 @@ namespace Game.Editor
             go.transform.SetPositionAndRotation(position, Quaternion.Euler(0, yaw, 0));
             go.transform.localScale *= scale;
             go.isStatic = go.GetComponentInChildren<Animator>() == null;
+            if (id.StartsWith("tree")) RecolorTree(go);
             return go;
+        }
+
+        /// <summary>Árvores Kenney vêm verde-água: folhas viram verde-escuro natural e o tronco marrom.</summary>
+        private static void RecolorTree(GameObject go)
+        {
+            foreach (var r in go.GetComponentsInChildren<Renderer>())
+            {
+                var mats = r.sharedMaterials;
+                for (int i = 0; i < mats.Length; i++)
+                {
+                    if (mats[i] == null) continue;
+                    var c = mats[i].HasProperty("_BaseColor") ? mats[i].GetColor("_BaseColor") : Color.white;
+                    mats[i] = c.g > c.r * 1.15f ? _leaves : _bark;
+                }
+                r.sharedMaterials = mats;
+            }
         }
 
         /// <summary>Colisor de caixa do tamanho do modelo (prédios, veículos, poço…).</summary>

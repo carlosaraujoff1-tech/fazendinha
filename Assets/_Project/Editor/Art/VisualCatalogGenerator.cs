@@ -74,7 +74,7 @@ namespace Game.Editor.Art
             // Terra arada real (sulcos) e madeira de tábua (Poly Haven, CC0)
             catalog.soil = PbrMaterial("Soil", "farm_furrows", Vector2.one, Color.white, 0.05f);
             catalog.soilWet = PbrMaterial("SoilWet", "farm_furrows", Vector2.one, new Color(0.55f, 0.5f, 0.5f), 0.35f);
-            catalog.wood = PbrMaterial("WoodPlanks", "brown_planks_05", new Vector2(1f, 1f), new Color(0.85f, 0.7f, 0.55f), 0.1f);
+            catalog.wood = PbrMaterial("WoodPlanks", "brown_planks_05", new Vector2(1f, 1f), new Color(0.78f, 0.56f, 0.38f), 0.12f);
 
             // ---------- Culturas (4 fases, escala da fase 4) ----------
             foreach (var entry in map.crops ?? new CropEntry[0])
