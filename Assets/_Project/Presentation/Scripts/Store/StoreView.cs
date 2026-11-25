@@ -34,8 +34,9 @@ namespace Game.Presentation.Store
 
         private Vector3 Door => transform.position + new Vector3(0, 0, 4.6f);
         private Vector3 Outside => transform.position + new Vector3(0, 0, 8f);
-        private Vector3 CounterPos => transform.position + new Vector3(-3.4f, 0, 1.6f);
-        private Vector3 QueueStart => CounterPos + new Vector3(1.5f, 0, -0.6f);
+        // Caixa no corredor esquerdo, perto da câmera; a fila sobe pelo corredor em direção ao fundo.
+        private Vector3 CounterPos => transform.position + new Vector3(-3.7f, 0, -9.6f);
+        private Vector3 QueueStart => CounterPos + new Vector3(0.1f, 0, 1.3f);
 
         private void Start()
         {
@@ -45,7 +46,7 @@ namespace Game.Presentation.Store
             {
                 counter = Instantiate(visuals.cashRegister, transform);
                 counter.transform.position = CounterPos;
-                counter.transform.rotation = Quaternion.Euler(0, 90f, 0);
+                counter.transform.rotation = Quaternion.Euler(0, 180f, 0);
                 if (counter.GetComponentInChildren<Collider>() == null)
                 {
                     var box = counter.AddComponent<BoxCollider>();
@@ -73,7 +74,7 @@ namespace Game.Presentation.Store
             if (area != null)
             {
                 var c = transform.position;
-                area.SetBounds(GameArea.Store, Rect.MinMaxRect(c.x - 3, c.z - 7, c.x + 3, c.z + 1));
+                area.SetBounds(GameArea.Store, Rect.MinMaxRect(c.x - 3, c.z - 9, c.x + 3, c.z + 1));
             }
         }
 
@@ -154,9 +155,10 @@ namespace Game.Presentation.Store
                 int queuePos = StoreRules.QueuePosition(store, c);
                 if (queuePos >= 0)
                 {
-                    view.Target = QueueStart + new Vector3(0.15f * (queuePos % 2), 0, -0.95f * queuePos);
+                    view.Target = QueueStart + new Vector3(0.12f * (queuePos % 2), 0, 0.95f * queuePos);
                     float max = root.Catalog.TryGetCustomerType(c.TypeId, out var t) ? t.PatienceSeconds : 60f;
-                    view.SetPatience((float)(c.PatienceSeconds / max));
+                    float ratio = (float)(c.PatienceSeconds / max);
+                    view.SetPatience(ratio < 0.75f ? ratio : -1f); // só aparece quando começa a impacientar
                 }
                 else
                 {
@@ -179,8 +181,8 @@ namespace Game.Presentation.Store
             var visuals = root.Visuals;
             if (visuals == null || visuals.employee == null) return;
             _employee = Instantiate(visuals.employee, transform);
-            _employee.transform.position = CounterPos + new Vector3(-1.0f, 0, 0);
-            _employee.transform.rotation = Quaternion.Euler(0, 90f, 0);
+            _employee.transform.position = CounterPos + new Vector3(0, 0, -1.0f);
+            _employee.transform.rotation = Quaternion.identity;
             _employeeAnimator = _employee.GetComponentInChildren<Animator>();
         }
 

@@ -83,10 +83,10 @@ namespace Game.Presentation.Store
             _patienceBack.gameObject.SetActive(show);
             if (!show) return;
             ratio = Mathf.Clamp01(ratio);
-            _patienceBack.localScale = new Vector3(0.84f, 0.1f, 0.06f);
-            _patienceBack.localPosition = new Vector3(0, 1.65f, 0);
-            _patienceBar.localScale = new Vector3(0.8f * ratio, 0.07f, 0.08f);
-            _patienceBar.localPosition = new Vector3(-0.4f * (1f - ratio), 1.65f, 0);
+            _patienceBack.localScale = new Vector3(0.56f, 0.07f, 0.04f);
+            _patienceBack.localPosition = new Vector3(0, 1.6f, 0);
+            _patienceBar.localScale = new Vector3(0.52f * ratio, 0.05f, 0.06f);
+            _patienceBar.localPosition = new Vector3(-0.26f * (1f - ratio), 1.6f, 0);
             _patienceRenderer.sharedMaterial = GrayboxMaterials.Get(Color.Lerp(new Color(0.95f, 0.25f, 0.2f), new Color(0.3f, 0.9f, 0.35f), ratio));
         }
 

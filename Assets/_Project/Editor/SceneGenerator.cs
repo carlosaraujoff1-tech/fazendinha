@@ -262,7 +262,7 @@ namespace Game.Editor
             Place(v, "shelfBags", store.position + new Vector3(3.6f, 0, 3.3f), 180f, store);
             Place(v, "fridgeTall", store.position + new Vector3(4.5f, 0, -8f), -90f, store);
             Place(v, "fridgeTall", store.position + new Vector3(4.5f, 0, -10.5f), -90f, store);
-            Place(v, "bread", store.position + new Vector3(-4.4f, 0, -9f), 90f, store);
+            Place(v, "bread", store.position + new Vector3(-4.4f, 0, -13f), 90f, store);
             Place(v, "cart", store.position + new Vector3(1.6f, 0, 5.2f), 200f, store);
             Place(v, "cart", store.position + new Vector3(2.3f, 0, 5.4f), 190f, store);
             Place(v, "awning", store.position + new Vector3(0, 2.4f, 4.35f), 180f, store);

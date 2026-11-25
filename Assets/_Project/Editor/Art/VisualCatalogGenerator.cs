@@ -26,7 +26,8 @@ namespace Game.Editor.Art
         private const string ThirdParty = "Assets/ThirdParty/";
 
         // Tamanhos-alvo em metros (1 unidade = 1 m; parcela = 1,6 m).
-        private const float CropHeight = 1.1f, CropFootprint = 1.3f;
+        private const float CropFootprint = 1.35f;
+        private static readonly float[] StageHeights = { 0.38f, 0.62f, 0.9f, 1.25f };
 
 #pragma warning disable 0649 // preenchidos pelo JsonUtility
         [Serializable] private sealed class Mapping
@@ -74,10 +75,11 @@ namespace Game.Editor.Art
             {
                 var models = Enumerable.Range(1, 4).Select(i => LoadModel(string.Format(entry.stages, i))).ToArray();
                 if (models.Any(m => m == null)) { Debug.LogWarning($"[Arte] Faltam fases para '{entry.crop}'."); continue; }
-                float scale = FitByHeight(models[3], CropHeight, CropFootprint);
+                // Cada fase com altura própria (os modelos das fases 1-3 do pack são minúsculos): broto legível no celular.
                 var visual = new VisualCatalog.CropVisual { cropId = entry.crop, stages = new GameObject[4] };
                 for (int i = 0; i < 4; i++)
-                    visual.stages[i] = SaveWrapper(models[i], scale, $"{OutDir}/Crops/{entry.crop}_{i + 1}.prefab", true);
+                    visual.stages[i] = SaveWrapper(models[i], FitByHeight(models[i], StageHeights[i], CropFootprint),
+                        $"{OutDir}/Crops/{entry.crop}_{i + 1}.prefab", true);
                 catalog.crops.Add(visual);
             }
 
@@ -93,6 +95,12 @@ namespace Game.Editor.Art
             // ---------- Móveis da loja (escala pela largura; mede a superfície) ----------
             foreach (var e in map.furniture ?? new ModelEntry[0])
             {
+                if (e.model != null && e.model.StartsWith("builtin:"))
+                {
+                    var built = BuildStall(e.id, e.model.Substring("builtin:".Length), e.width);
+                    catalog.furniture.Add(built);
+                    continue;
+                }
                 var model = LoadModel(e.model);
                 if (model == null) { Warn(e.model); continue; }
                 float s = FitByWidth(model, e.width);
@@ -309,6 +317,46 @@ namespace Game.Editor.Art
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
             Object.DestroyImmediate(root);
             return prefab;
+        }
+
+        /// <summary>Móvel próprio (sem produtos "pintados" no modelo): tampo, prateleira de baixo, pés e placa colorida.</summary>
+        private static VisualCatalog.FurnitureVisual BuildStall(string id, string style, float width)
+        {
+            bool wood = style == "wood";
+            var body = LitMaterial(wood ? "StallWood" : "StallMetal", wood ? new Color(0.66f, 0.46f, 0.28f) : new Color(0.78f, 0.82f, 0.92f), null, Vector2.one);
+            var dark = LitMaterial(wood ? "StallWoodDark" : "StallMetalDark", wood ? new Color(0.45f, 0.3f, 0.18f) : new Color(0.5f, 0.55f, 0.68f), null, Vector2.one);
+            var sign = LitMaterial(wood ? "StallSignGreen" : "StallSignBlue", wood ? new Color(0.25f, 0.62f, 0.32f) : new Color(0.25f, 0.45f, 0.8f), null, Vector2.one);
+            const float depth = 1.0f, top = 0.9f;
+            var root = new GameObject(id);
+            void Box(string n, Vector3 pos, Vector3 size, Material m)
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.name = n;
+                go.transform.SetParent(root.transform, false);
+                go.transform.localPosition = pos;
+                go.transform.localScale = size;
+                go.GetComponent<Renderer>().sharedMaterial = m;
+                Object.DestroyImmediate(go.GetComponent<Collider>());
+            }
+            Box("Top", new Vector3(0, top - 0.06f, 0), new Vector3(width, 0.12f, depth), body);
+            Box("Lip", new Vector3(0, top + 0.03f, depth * 0.5f), new Vector3(width, 0.1f, 0.06f), dark);
+            Box("Shelf", new Vector3(0, 0.3f, 0), new Vector3(width - 0.1f, 0.08f, depth - 0.1f), dark);
+            foreach (var x in new[] { -width * 0.5f + 0.08f, width * 0.5f - 0.08f })
+            foreach (var z in new[] { -depth * 0.5f + 0.08f, depth * 0.5f - 0.08f })
+                Box("Leg", new Vector3(x, (top - 0.12f) * 0.5f, z), new Vector3(0.12f, top - 0.12f, 0.12f), dark);
+            Box("Sign", new Vector3(0, top - 0.22f, -depth * 0.5f - 0.02f), new Vector3(width * 0.9f, 0.22f, 0.04f), sign);
+            var box = root.AddComponent<BoxCollider>();
+            box.center = new Vector3(0, top * 0.5f, 0);
+            box.size = new Vector3(width, top, depth);
+
+            string path = $"{OutDir}/Furniture/{id}.prefab";
+            var prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
+            Object.DestroyImmediate(root);
+            return new VisualCatalog.FurnitureVisual
+            {
+                furnitureId = id, prefab = prefab, surfaceHeight = top,
+                surfaceSize = new Vector2(width * 0.86f, depth * 0.7f),
+            };
         }
 
         // ---------------------------------------------------------------- animação

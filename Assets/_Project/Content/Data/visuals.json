@@ -8,20 +8,20 @@
     { "crop": "milho",   "stages": "Quaternius/Crops/Corn_{0}.fbx" }
   ],
   "products": [
-    { "id": "alface",  "model": "Kenney/Food/cabbage.fbx", "height": 0.26 },
-    { "id": "cenoura", "model": "Kenney/Food/carrot.fbx",  "height": 0.30 },
-    { "id": "batata",  "model": "Kenney/Food/beet.fbx",    "height": 0.24 },
-    { "id": "tomate",  "model": "Kenney/Food/tomato.fbx",  "height": 0.20 },
-    { "id": "milho",   "model": "Kenney/Food/corn.fbx",    "height": 0.32 },
-    { "id": "leite",   "model": "Kenney/Food/carton.fbx",  "height": 0.32 },
-    { "id": "queijo",  "model": "Kenney/Food/cheese.fbx",  "height": 0.18 },
-    { "id": "arroz",   "model": "Kenney/Food/bag.fbx",     "height": 0.32 },
-    { "id": "feijao",  "model": "Kenney/Food/can.fbx",     "height": 0.24 }
+    { "id": "alface",  "model": "Kenney/Food/cabbage.fbx", "height": 0.38 },
+    { "id": "cenoura", "model": "Kenney/Food/carrot.fbx",  "height": 0.430 },
+    { "id": "batata",  "model": "Kenney/Food/beet.fbx",    "height": 0.35 },
+    { "id": "tomate",  "model": "Kenney/Food/tomato.fbx",  "height": 0.290 },
+    { "id": "milho",   "model": "Kenney/Food/corn.fbx",    "height": 0.46 },
+    { "id": "leite",   "model": "Kenney/Food/carton.fbx",  "height": 0.46 },
+    { "id": "queijo",  "model": "Kenney/Food/cheese.fbx",  "height": 0.26 },
+    { "id": "arroz",   "model": "Kenney/Food/bag.fbx",     "height": 0.46 },
+    { "id": "feijao",  "model": "Kenney/Food/can.fbx",     "height": 0.35 }
   ],
   "furniture": [
-    { "id": "banca",     "model": "Kenney/MiniMarket/display-fruit.fbx", "width": 2.4 },
+    { "id": "banca",     "model": "builtin:wood",  "width": 2.4 },
     { "id": "geladeira", "model": "Kenney/MiniMarket/freezer.fbx",       "width": 2.4 },
-    { "id": "gondola",   "model": "Kenney/MiniMarket/display-cans.fbx",  "width": 2.4 }
+    { "id": "gondola",   "model": "builtin:metal", "width": 2.4 }
   ],
   "cashRegister": { "model": "Kenney/MiniMarket/cash-register.fbx", "width": 1.8 },
   "customers": [
