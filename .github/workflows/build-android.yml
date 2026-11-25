@@ -119,6 +119,10 @@ jobs:
             No celular: toque no arquivo .apk abaixo para baixar e instalar.
 
       # ---------- Prints automáticos (para o Claude ver o jogo de verdade) ----------
+      - name: Limpar cache de pacotes (outra imagem do Unity)
+        if: steps.check.outputs.ok == 'true'
+        run: sudo rm -rf Library/PackageCache Library/Bee Library/ScriptAssemblies Library/PackageManager || true
+
       - name: Build Linux para prints
         if: steps.check.outputs.ok == 'true'
         continue-on-error: true
