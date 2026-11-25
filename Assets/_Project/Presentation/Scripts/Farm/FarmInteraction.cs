@@ -1,7 +1,6 @@
 using Game.Core.Animals;
 using Game.Core.Display;
 using Game.Core.Farm;
-using Game.Presentation.Controls;
 using Game.Presentation.Effects;
 using Game.Presentation.UI;
 using UnityEngine;
@@ -9,55 +8,19 @@ using UnityEngine;
 namespace Game.Presentation.Farm
 {
     /// <summary>
-    /// Toque numa parcela: vazia abre o menu de plantio, crescendo e sem rega rega, pronta colhe.
-    /// Toda mudança passa por comandos no <see cref="GameRoot"/>.
+    /// Ação numa parcela (botão de ação perto dela): vazia abre o menu de plantio, crescendo e sem rega rega,
+    /// pronta colhe. Animais: alimentar / coletar. Toda mudança passa por comandos no <see cref="GameRoot"/>.
     /// </summary>
     public sealed class FarmInteraction : MonoBehaviour
     {
-        [SerializeField] private TouchCameraController cameraController;
         [SerializeField] private FarmView farmView;
 
         private PlantMenu _plantMenu;
 
         private void Start()
         {
-            if (cameraController == null) cameraController = FindFirstObjectByType<TouchCameraController>();
-            if (farmView == null) farmView = FindFirstObjectByType<FarmView>();
             _plantMenu = FindFirstObjectByType<PlantMenu>();
-            cameraController.Tapped += OnTapped;
-            farmView.LayoutChanged += FitCamera;
-            FitCamera();
-        }
-
-        private void OnDestroy()
-        {
-            if (cameraController != null) cameraController.Tapped -= OnTapped;
-            if (farmView != null) farmView.LayoutChanged -= FitCamera;
-        }
-
-        private void FitCamera()
-        {
-            var b = farmView.Bounds();
-            var area = FindFirstObjectByType<AreaSwitcher>();
-            // Fazenda inteira: pasto/galinheiro à esquerda, vendinha à direita.
-            var rect = Rect.MinMaxRect(Mathf.Min(b.xMin, -13f), b.yMin - 2f, Mathf.Max(b.xMax, 10f), Mathf.Max(b.yMax + 2f, 4f));
-            if (area != null) area.SetBounds(GameArea.Farm, rect);
-            else cameraController.SetBounds(rect.min, rect.max);
-        }
-
-        private void OnTapped(Vector2 screen)
-        {
-            var ray = cameraController.Camera.ScreenPointToRay(screen);
-            if (!Physics.Raycast(ray, out var hit, 200f)) return;
-            var plotView = hit.collider.GetComponentInParent<PlotView>();
-            if (plotView != null) { HandlePlot(plotView.Index); return; }
-            var animal = hit.collider.GetComponentInParent<AnimalView>();
-            if (animal != null) { HandleAnimal(animal.Index, animal.transform.position); return; }
-            if (hit.collider.GetComponentInParent<SeedShopView>() != null)
-            {
-                SoundPlayer.Play("click");
-                FindFirstObjectByType<StoreMenus>()?.OpenSeedShop();
-            }
+            if (farmView == null) farmView = FindFirstObjectByType<FarmView>();
         }
 
         public void HandleAnimal(int index, Vector3 pos)

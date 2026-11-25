@@ -3,27 +3,39 @@
   "crops": [
     {
       "crop": "trigo",
-      "stages": "Quaternius/Crops/Wheat_{0}.fbx"
+      "stages": "Quaternius/Crops/Wheat_{0}.fbx",
+      "height": 1.0,
+      "density": 4
     },
     {
       "crop": "alface",
-      "stages": "Quaternius/Crops/Lettuce_{0}.fbx"
+      "stages": "Quaternius/Crops/Lettuce_{0}.fbx",
+      "height": 0.38,
+      "density": 4
     },
     {
       "crop": "cenoura",
-      "stages": "Quaternius/Crops/Carrot_{0}.fbx"
+      "stages": "Quaternius/Crops/Carrot_{0}.fbx",
+      "height": 0.45,
+      "density": 4
     },
     {
       "crop": "batata",
-      "stages": "Quaternius/Crops/Beet_{0}.fbx"
+      "stages": "Quaternius/Crops/Beet_{0}.fbx",
+      "height": 0.5,
+      "density": 4
     },
     {
       "crop": "tomate",
-      "stages": "Quaternius/Crops/Tomato_{0}.fbx"
+      "stages": "Quaternius/Crops/Tomato_{0}.fbx",
+      "height": 1.15,
+      "density": 3
     },
     {
       "crop": "milho",
-      "stages": "Quaternius/Crops/Corn_{0}.fbx"
+      "stages": "Quaternius/Crops/Corn_{0}.fbx",
+      "height": 2.0,
+      "density": 3
     }
   ],
   "products": [
@@ -106,8 +118,8 @@
     }
   ],
   "cashRegister": {
-    "model": "Kenney/MiniMarket/cash-register.fbx",
-    "width": 1.8
+    "model": "builtin:counter",
+    "width": 2.0
   },
   "customers": [
     "Kenney/MiniCharacters/character-female-a.fbx",
@@ -124,7 +136,7 @@
     "Kenney/MiniCharacters/character-male-f.fbx",
     "Kenney/MiniCharacters/character-male-g.fbx"
   ],
-  "characterHeight": 1.25,
+  "characterHeight": 1.7,
   "employee": "Kenney/MiniMarket/character-employee.fbx",
   "decor": [
     {
@@ -334,6 +346,85 @@
       "id": "coop",
       "model": "Quaternius/FarmBuildings/ChickenCoop.fbx",
       "height": 2.2
+    },
+    {
+      "id": "phRegister",
+      "model": "PolyHaven/CashRegister_01/CashRegister_01_1k.fbx",
+      "height": 0
+    },
+    {
+      "id": "crate",
+      "model": "PolyHaven/wooden_crate_01/wooden_crate_01_1k.fbx",
+      "height": 0
+    },
+    {
+      "id": "plasticCrate",
+      "model": "PolyHaven/plastic_crate_01/plastic_crate_01_1k.fbx",
+      "height": 0
+    },
+    {
+      "id": "cardboard",
+      "model": "PolyHaven/cardboard_box_01/cardboard_box_01_1k.fbx",
+      "height": 0
+    },
+    {
+      "id": "streetLamp",
+      "model": "PolyHaven/street_lamp_01/street_lamp_01_1k.fbx",
+      "height": 0
+    },
+    {
+      "id": "bench",
+      "model": "PolyHaven/painted_wooden_bench/painted_wooden_bench_1k.fbx",
+      "height": 0
+    },
+    {
+      "id": "planter",
+      "model": "PolyHaven/planter_box_01/planter_box_01_1k.fbx",
+      "height": 0
+    },
+    {
+      "id": "phShelf",
+      "model": "PolyHaven/Shelf_01/Shelf_01_1k.fbx",
+      "height": 0
+    },
+    {
+      "id": "shrubA",
+      "model": "PolyHaven/shrub_01/shrub_01_1k.fbx",
+      "height": 0,
+      "tex": "PolyHaven/shrub_01/textures/shrub_01_diffa_1k.png",
+      "normal": "PolyHaven/shrub_01/textures/shrub_01_nor_gl_1k.exr",
+      "cutout": true
+    },
+    {
+      "id": "shrubB",
+      "model": "PolyHaven/shrub_02/shrub_02_1k.fbx",
+      "height": 0,
+      "tex": "PolyHaven/shrub_02/textures/shrub_02_diffa_1k.png",
+      "normal": "PolyHaven/shrub_02/textures/shrub_02_nor_gl_1k.exr",
+      "cutout": true
+    },
+    {
+      "id": "shrubC",
+      "model": "PolyHaven/shrub_04/shrub_04_1k.fbx",
+      "height": 0,
+      "tex": "PolyHaven/shrub_04/textures/shrub_04_diffa_1k.png",
+      "normal": "PolyHaven/shrub_04/textures/shrub_04_nor_gl_1k.exr",
+      "cutout": true
+    },
+    {
+      "id": "grassClump",
+      "model": "PolyHaven/grass_medium_02/grass_medium_02_1k.fbx",
+      "height": 0,
+      "tex": "PolyHaven/grass_medium_02/textures/grass_medium_02_diffa_1k.png",
+      "normal": "PolyHaven/grass_medium_02/textures/grass_medium_02_nor_gl_1k.exr",
+      "cutout": true
+    },
+    {
+      "id": "stumpPH",
+      "model": "PolyHaven/tree_stump_01/tree_stump_01_1k.fbx",
+      "height": 0,
+      "tex": "PolyHaven/tree_stump_01/textures/tree_stump_01_diff_1k.jpg",
+      "normal": "PolyHaven/tree_stump_01/textures/tree_stump_01_nor_gl_1k.exr"
     }
   ],
   "particles": {
@@ -414,5 +505,9 @@
       "height": 1.1,
       "animation": "Idle"
     }
-  ]
+  ],
+  "player": {
+    "model": "Kenney/MiniCharacters/character-female-b.fbx",
+    "height": 1.7
+  }
 }

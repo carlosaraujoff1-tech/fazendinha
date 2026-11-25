@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Game.Core.Store;
 using Game.Presentation.Graybox;
+using Game.Presentation.Player;
 using UnityEngine;
 
 namespace Game.Presentation.Store
@@ -9,7 +10,7 @@ namespace Game.Presentation.Store
     /// Móvel da loja: modelo 3D do catálogo visual (banca, freezer, gôndola) com os produtos expostos em cima,
     /// em quantidade proporcional ao estoque. Sem modelo, cai no bloco colorido do gray box.
     /// </summary>
-    public sealed class ShelfView : MonoBehaviour
+    public sealed class ShelfView : InteractableBehaviour
     {
         private const int Columns = 5, Rows = 2;
         private const int MaxItemsShown = Columns * Rows;
@@ -22,6 +23,22 @@ namespace Game.Presentation.Store
         private Transform _fill; // fallback gray box
 
         public int Index { get; private set; }
+
+        public override float InteractionRadius => 2.0f;
+
+        public override string Prompt(PlayerContext player)
+        {
+            var root = GameRoot.Instance;
+            var shelves = root.State.Store.Shelves;
+            if (Index >= shelves.Count) return null;
+            var shelf = shelves[Index];
+            int units = StoreRules.Units(shelf, root.NowMs);
+            string name = root.Catalog.TryGetFurniture(shelf.FurnitureId, out var f) ? f.Name : "Prateleira";
+            return units == 0 ? $"{name}: repor (vazia)" : $"{name}: repor / preço";
+        }
+
+        public override void Interact(PlayerContext player) =>
+            FindFirstObjectByType<Game.Presentation.UI.StoreMenus>()?.OpenShelf(Index);
 
         public void Build(int index, string furnitureId, string categoryId)
         {

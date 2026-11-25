@@ -14,8 +14,8 @@ namespace Game.Presentation.Farm
     /// </summary>
     public sealed class AnimalsView : MonoBehaviour
     {
-        [SerializeField] private Vector3 coopArea = new Vector3(-9.5f, 0f, 3.2f);
-        [SerializeField] private Vector3 pastureArea = new Vector3(-12.5f, 0f, -3.5f);
+        [SerializeField] private Vector3 coopArea = new Vector3(-19f, 0f, 4.5f);
+        [SerializeField] private Vector3 pastureArea = new Vector3(-21.5f, 0f, -7f);
         [SerializeField] private float refreshSeconds = 0.25f;
 
         private readonly List<AnimalView> _views = new List<AnimalView>();

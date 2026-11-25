@@ -3,139 +3,146 @@ using System.Text;
 using Game.Core.Display;
 using Game.Core.Farm;
 using Game.Core.Store;
-using Game.Presentation.Controls;
-using Game.Presentation.Store;
+using Game.Presentation.Player;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Game.Presentation.UI
 {
-    /// <summary>HUD gray box: moedas, meta, abas Fazenda/Loja e a barra de ações de cada área.</summary>
+    /// <summary>
+    /// HUD em terceira pessoa (paisagem): barra de cima com moedas, nível e armazém; botões de menu no topo à
+    /// direita; joystick na metade esquerda; área de giro da câmera na direita; botão de ação grande embaixo à
+    /// direita (aparece só perto de algo interagível); botão de viagem rápida fazenda ⇄ mercadinho.
+    /// </summary>
     public sealed class HudController : MonoBehaviour
     {
-        [SerializeField] private float refreshSeconds = 0.25f;
+        [SerializeField] private float refreshSeconds = 0.2f;
 
-        private Text _coins;
-        private Text _goal;
-        private Text _warehouse;
-        private Button _buyPlot;
-        private Button _scan;
-        private Button _furniture;
-        private Button _supplier;
-        private Button _seedShop;
-        private Button _animals;
-        private Button _tabFarm;
-        private Button _tabStore;
-        private AreaSwitcher _area;
+        public static Vector3 FarmSpawn = new Vector3(14f, 0f, -11f);
+        public static float FarmSpawnYaw = -90f;
+        public static Vector3 StoreSpawn = new Vector3(41f, 0f, -8.5f);
+        public static float StoreSpawnYaw = 0f;
+
+        private Text _coins, _info;
+        private Button _action;
+        private Text _actionLabel;
+        private Button _travel;
         private float _nextRefresh;
+        private bool _atStore;
         private readonly StringBuilder _sb = new StringBuilder(256);
 
         private void Start()
         {
+            // Áreas de toque (atrás de tudo): joystick à esquerda, câmera à direita.
+            var joy = UiFactory.Node("Joystick", transform).Anchor(new Vector2(0, 0), new Vector2(0.42f, 0.86f));
+            joy.gameObject.AddComponent<VirtualJoystick>();
+            var look = UiFactory.Node("Look", transform).Anchor(new Vector2(0.42f, 0), new Vector2(1, 0.86f));
+            look.gameObject.AddComponent<LookArea>();
+
+            // Barra de cima
             var top = UiFactory.Panel("TopBar", transform, UiFactory.PanelColor);
-            ((RectTransform)top.transform).Anchor(new Vector2(0, 0.91f), new Vector2(1, 1));
-            _coins = UiFactory.Label("Coins", top.transform, "", 52, TextAnchor.MiddleLeft);
-            ((RectTransform)_coins.transform).Anchor(new Vector2(0.04f, 0), new Vector2(0.6f, 1));
-            _goal = UiFactory.Label("Goal", top.transform, "", 34, TextAnchor.MiddleRight);
-            ((RectTransform)_goal.transform).Anchor(new Vector2(0.5f, 0), new Vector2(0.96f, 1));
+            ((RectTransform)top.transform).Anchor(new Vector2(0, 0.88f), new Vector2(1, 1));
+            _coins = UiFactory.Label("Coins", top.transform, "", 40, TextAnchor.MiddleLeft);
+            ((RectTransform)_coins.transform).Anchor(new Vector2(0.02f, 0.45f), new Vector2(0.4f, 1));
+            _info = UiFactory.Label("Info", top.transform, "", 24, TextAnchor.MiddleLeft);
+            ((RectTransform)_info.transform).Anchor(new Vector2(0.02f, 0), new Vector2(0.45f, 0.5f));
 
-            // Abas (as 5 da UI final chegam na Etapa 5)
-            _area = FindFirstObjectByType<AreaSwitcher>();
-            // Paisagem: uma barra inferior com abas à esquerda, informação no meio e ações à direita.
-            var bottom = UiFactory.Panel("BottomBar", transform, UiFactory.PanelColor);
-            ((RectTransform)bottom.transform).Anchor(new Vector2(0, 0), new Vector2(1, 0.12f));
-            _tabFarm = UiFactory.MakeButton("TabFarm", bottom.transform, "Fazenda", () => _area.Show(GameArea.Farm), 36);
-            ((RectTransform)_tabFarm.transform).Anchor(new Vector2(0.01f, 0.12f), new Vector2(0.13f, 0.88f));
-            _tabStore = UiFactory.MakeButton("TabStore", bottom.transform, "Mercadinho", () => _area.Show(GameArea.Store), 36);
-            ((RectTransform)_tabStore.transform).Anchor(new Vector2(0.14f, 0.12f), new Vector2(0.27f, 0.88f));
-            _warehouse = UiFactory.Label("Info", bottom.transform, "", 30, TextAnchor.MiddleLeft);
-            ((RectTransform)_warehouse.transform).Anchor(new Vector2(0.29f, 0), new Vector2(0.51f, 1));
-            _furniture = UiFactory.MakeButton("Upgrades", bottom.transform, "Melhorias", () => FindFirstObjectByType<StoreMenus>()?.OpenFurniture(), 30);
-            ((RectTransform)_furniture.transform).Anchor(new Vector2(0.66f, 0.12f), new Vector2(0.79f, 0.88f));
-            _supplier = UiFactory.MakeButton("Supplier", bottom.transform, "Fornecedor", () => FindFirstObjectByType<StoreMenus>()?.OpenSupplier(), 30);
-            ((RectTransform)_supplier.transform).Anchor(new Vector2(0.52f, 0.12f), new Vector2(0.65f, 0.88f));
-            _seedShop = UiFactory.MakeButton("Seeds", bottom.transform, "Sementes", () => FindFirstObjectByType<StoreMenus>()?.OpenSeedShop(), 30, ButtonStyle.Blue);
-            ((RectTransform)_seedShop.transform).Anchor(new Vector2(0.52f, 0.12f), new Vector2(0.65f, 0.88f));
-            _animals = UiFactory.MakeButton("Animals", bottom.transform, "Animais", () => FindFirstObjectByType<StoreMenus>()?.OpenAnimals(), 30, ButtonStyle.Blue);
-            ((RectTransform)_animals.transform).Anchor(new Vector2(0.66f, 0.12f), new Vector2(0.79f, 0.88f));
-            _buyPlot = UiFactory.MakeButton("BuyPlot", bottom.transform, "", () => GameRoot.Instance.Execute(new BuyPlotCommand()), 32);
-            ((RectTransform)_buyPlot.transform).Anchor(new Vector2(0.80f, 0.12f), new Vector2(0.99f, 0.88f));
-            _scan = UiFactory.MakeButton("Scan", bottom.transform, "Passar item", StoreInteraction.Scan, 32);
-            ((RectTransform)_scan.transform).Anchor(new Vector2(0.80f, 0.12f), new Vector2(0.99f, 0.88f));
+            var menus = FindFirstObjectByType<StoreMenus>();
+            string[] labels = { "Sementes", "Animais", "Fornecedor", "Melhorias" };
+            System.Action[] actions =
+            {
+                () => menus?.OpenSeedShop(), () => menus?.OpenAnimals(), () => menus?.OpenSupplier(), () => menus?.OpenFurniture(),
+            };
+            for (int i = 0; i < labels.Length; i++)
+            {
+                var b = UiFactory.MakeButton(labels[i], top.transform, labels[i], actions[i], 26, ButtonStyle.Blue);
+                float x0 = 0.46f + i * 0.105f;
+                ((RectTransform)b.transform).Anchor(new Vector2(x0, 0.12f), new Vector2(x0 + 0.1f, 0.88f));
+            }
+            _travel = UiFactory.MakeButton("Travel", top.transform, "Ir ao mercadinho", Travel, 24, ButtonStyle.Yellow);
+            ((RectTransform)_travel.transform).Anchor(new Vector2(0.885f, 0.12f), new Vector2(0.995f, 0.88f));
 
-            if (_area != null) _area.Changed += _ => Refresh();
+            // Botão de ação
+            _action = UiFactory.MakeButton("Action", transform, "", InteractionSystem.InteractNow, 34, ButtonStyle.Green);
+            ((RectTransform)_action.transform).Anchor(new Vector2(0.66f, 0.05f), new Vector2(0.97f, 0.2f));
+            _actionLabel = _action.GetComponentInChildren<Text>();
+            _action.gameObject.SetActive(false);
+
             Refresh();
+        }
+
+        private void Travel()
+        {
+            var p = PlayerController.Instance;
+            if (p == null) return;
+            _atStore = !_atStore;
+            if (_atStore) p.TeleportTo(StoreSpawn, StoreSpawnYaw);
+            else p.TeleportTo(FarmSpawn, FarmSpawnYaw);
+            var cam = FindFirstObjectByType<ThirdPersonCamera>();
+            if (cam != null) { cam.Yaw = p.transform.eulerAngles.y; cam.Snap(); }
         }
 
         private void Update()
         {
+            // Botão de ação acompanha a interação mais próxima (a cada quadro, barato).
+            string prompt = InteractionSystem.CurrentPrompt;
+            bool show = !string.IsNullOrEmpty(prompt) && !MenuOpen();
+            if (_action.gameObject.activeSelf != show) _action.gameObject.SetActive(show);
+            if (show && _actionLabel.text != prompt) _actionLabel.text = prompt;
+
+            var kb = UnityEngine.InputSystem.Keyboard.current;
+            if (kb != null && kb.eKey.wasPressedThisFrame && show) InteractionSystem.InteractNow();
+
             if (Time.unscaledTime < _nextRefresh) return;
             _nextRefresh = Time.unscaledTime + refreshSeconds;
             Refresh();
+        }
+
+        private static bool MenuOpen()
+        {
+            var plant = PlantMenu.IsOpen;
+            return plant || StoreMenus.IsOpen;
         }
 
         private void Refresh()
         {
             var root = GameRoot.Instance;
             var s = root.State;
-            _coins.text = $"Moedas {DisplayFormat.Coins(s.Wallet.Coins)}   Gemas {s.Wallet.Gems}";
-            // Metas de verdade (dados) chegam na Etapa 5; por enquanto mostra o progresso de colheitas.
-            _goal.text = $"Nível {s.Progress.Level} · Colheitas {s.Stats.CropsHarvested}";
+            _coins.text = $"Moedas {DisplayFormat.Coins(s.Wallet.Coins)}   ·   Nível {s.Progress.Level}";
 
-            bool inStore = _area != null && _area.Current == GameArea.Store;
-            _buyPlot.gameObject.SetActive(!inStore);
-            _scan.gameObject.SetActive(inStore);
-            _furniture.gameObject.SetActive(inStore);
-            _supplier.gameObject.SetActive(inStore);
-            _seedShop.gameObject.SetActive(!inStore);
-            _animals.gameObject.SetActive(!inStore);
-            UiFactory.SetStyle(_tabFarm, inStore ? ButtonStyle.Grey : ButtonStyle.Yellow);
-            UiFactory.SetStyle(_tabStore, inStore ? ButtonStyle.Yellow : ButtonStyle.Grey);
-            if (inStore)
-            {
-                RefreshStore(root);
-                return;
-            }
+            var p = PlayerController.Instance;
+            if (p != null) _atStore = p.transform.position.x > 26f;
+            UiFactory.SetButton(_travel, _atStore ? "Ir à fazenda" : "Ir ao mercadinho", true, ButtonStyle.Yellow);
 
             _sb.Clear();
-            _sb.Append("Armazém: ");
-            long now = root.NowMs;
-            bool any = false;
-            int shown = 0, more = 0;
-            foreach (var product in root.Catalog.Products.OrderByDescending(p => root.Context.Warehouse.Count(p.Id, now)))
+            if (_atStore)
             {
-                int n = root.Context.Warehouse.Count(product.Id, now);
-                if (n <= 0) continue;
-                if (shown >= 3) { more++; continue; }
-                if (any) _sb.Append("  ");
-                _sb.Append(product.Name).Append(' ').Append(n);
-                any = true;
-                shown++;
+                int queued = 0, shopping = 0;
+                foreach (var c in s.Store.Customers) { if (c.Phase == CustomerPhase.Queued) queued++; else shopping++; }
+                _sb.Append("Fila ").Append(queued).Append("  ·  Comprando ").Append(shopping)
+                   .Append("  ·  Vendas ").Append(DisplayFormat.Coins(s.Stats.SalesRevenue));
             }
-            if (more > 0) _sb.Append("  +").Append(more);
-            if (!any) _sb.Append("vazio");
-            _warehouse.text = _sb.ToString();
-
-            var economy = root.Catalog.Economy;
-            bool atMax = s.Farm.Plots.Count >= economy.MaxPlots;
-            long cost = FarmRules.NextPlotCost(s, economy);
-            UiFactory.SetButton(_buyPlot, atMax ? "Máx. parcelas" : $"+ Parcela ({DisplayFormat.Coins(cost)})",
-                !atMax && s.Wallet.Coins >= cost);
-        }
-    
-        private void RefreshStore(GameRoot root)
-        {
-            var store = root.State.Store;
-            int queued = 0, shopping = 0;
-            foreach (var c in store.Customers)
+            else
             {
-                if (c.Phase == CustomerPhase.Queued) queued++;
-                else shopping++;
+                _sb.Append("Armazém: ");
+                long now = root.NowMs;
+                int shown = 0, more = 0;
+                foreach (var product in root.Catalog.Products.OrderByDescending(pr => root.Context.Warehouse.Count(pr.Id, now)))
+                {
+                    int n = root.Context.Warehouse.Count(product.Id, now);
+                    if (n <= 0) continue;
+                    if (shown >= 4) { more++; continue; }
+                    if (shown > 0) _sb.Append("  ");
+                    _sb.Append(product.Name).Append(' ').Append(n);
+                    shown++;
+                }
+                if (shown == 0) _sb.Append("vazio");
+                if (more > 0) _sb.Append("  +").Append(more);
+                int seeds = 0;
+                foreach (var kv in s.Farm.Seeds) seeds += kv.Value;
+                _sb.Append("   ·   Sementes ").Append(seeds);
             }
-            var front = StoreRules.FrontOfQueue(store);
-            string next = front != null ? $"  ·  item {front.ScannedLines + 1}/{front.Cart.Count}" : "";
-            _warehouse.text = $"Fila {queued}{next}\nComprando {shopping}  ·  Vendas {DisplayFormat.Coins(root.State.Stats.SalesRevenue)}";
-            UiFactory.SetButton(_scan, "Passar item", front != null);
+            _info.text = _sb.ToString();
         }
     }
 }

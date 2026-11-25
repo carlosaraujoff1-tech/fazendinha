@@ -18,6 +18,7 @@ namespace Game.Content
         {
             public string cropId;
             [Tooltip("Fases 1..4 de crescimento.")] public GameObject[] stages = new GameObject[0];
+            [Tooltip("Plantas por lado no canteiro (density × density).")] public int density = 3;
         }
 
         [Serializable]
@@ -48,6 +49,10 @@ namespace Game.Content
         public List<CropVisual> crops = new List<CropVisual>();
         public Material soil;
         public Material soilWet;
+        [Tooltip("Madeira de tábua (bordas dos canteiros, construções).")] public Material wood;
+
+        [Header("Jogadora")]
+        [Tooltip("Personagem da jogadora (Animator com speed/pick).")] public GameObject player;
 
         [Header("Produtos e loja")]
         public List<IdPrefab> products = new List<IdPrefab>();
@@ -106,6 +111,12 @@ namespace Game.Content
             Index();
             if (cropId == null || !_crops.TryGetValue(cropId, out var c) || c.stages == null || c.stages.Length == 0) return null;
             return c.stages[Mathf.Clamp(stage - 1, 0, c.stages.Length - 1)];
+        }
+
+        public int CropDensity(string cropId)
+        {
+            Index();
+            return cropId != null && _crops.TryGetValue(cropId, out var c) ? Mathf.Max(1, c.density) : 1;
         }
 
         public GameObject Product(string productId) { Index(); return Get(_products, productId); }

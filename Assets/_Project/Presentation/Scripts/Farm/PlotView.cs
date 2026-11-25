@@ -1,7 +1,9 @@
 using Game.Core.Farm;
 using Game.Core.State;
 using Game.Presentation.Effects;
+using Game.Core.Display;
 using Game.Presentation.Graybox;
+using Game.Presentation.Player;
 using UnityEngine;
 
 namespace Game.Presentation.Farm
@@ -10,7 +12,7 @@ namespace Game.Presentation.Farm
     /// Visual de uma parcela: canteiro de terra arada com borda de madeira, planta 3D da fase atual
     /// (com "pulo" ao mudar de fase) e, quando pronta, brilho dourado + o produto flutuando.
     /// </summary>
-    public sealed class PlotView : MonoBehaviour
+    public sealed class PlotView : InteractableBehaviour
     {
         private static readonly Color BorderColor = new Color(0.47f, 0.32f, 0.2f);
 
@@ -18,6 +20,8 @@ namespace Game.Presentation.Farm
         private Material _soilDry, _soilWet;
         private Transform _plantRoot;
         private GameObject _model;
+        private float _size = 3.2f;
+        private float _iconHeight = 1.8f;
         private GameObject _readyFx;
         private GameObject _readyIcon;
         private string _shownCrop;
@@ -28,9 +32,32 @@ namespace Game.Presentation.Farm
 
         public int Index { get; private set; }
 
+        // ---------- Interação (botão de ação) ----------
+        public override string Prompt(PlayerContext player)
+        {
+            var root = GameRoot.Instance;
+            var plots = root.State.Farm.Plots;
+            if (Index >= plots.Count) return null;
+            var plot = plots[Index];
+            switch (FarmRules.GetPhase(plot, root.NowMs))
+            {
+                case PlotPhase.Empty: return "Plantar";
+                case PlotPhase.Growing:
+                    return plot.Watered ? $"Crescendo · {DisplayFormat.Duration(FarmRules.RemainingMs(plot, root.NowMs))}" : "Regar";
+                default:
+                    string name = root.Catalog.TryGetCrop(plot.CropId, out var crop) ? crop.Name : plot.CropId;
+                    return $"Colher {name}";
+            }
+        }
+
+        public override void Interact(PlayerContext player) =>
+            FindFirstObjectByType<FarmInteraction>()?.HandlePlot(Index);
+
         public void Build(int index, float size)
         {
             Index = index;
+            _size = size;
+            SetRadius(size * 0.5f + 1.4f);
             name = "Plot_" + index;
             var visuals = GameRoot.Instance != null ? GameRoot.Instance.Visuals : null;
             _soilDry = visuals != null && visuals.soil != null ? visuals.soil : GrayboxMaterials.Get(new Color(0.45f, 0.3f, 0.18f));
@@ -38,7 +65,7 @@ namespace Game.Presentation.Farm
 
             // Borda de madeira (4 tábuas) + terra levemente rebaixada
             float t = 0.12f;
-            var border = GrayboxMaterials.Get(BorderColor);
+            var border = visuals != null && visuals.wood != null ? visuals.wood : GrayboxMaterials.Get(BorderColor);
             Board(new Vector3(0, 0.09f, size * 0.5f), new Vector3(size + t, 0.18f, t), border);
             Board(new Vector3(0, 0.09f, -size * 0.5f), new Vector3(size + t, 0.18f, t), border);
             Board(new Vector3(size * 0.5f, 0.09f, 0), new Vector3(t, 0.18f, size), border);
@@ -114,7 +141,7 @@ namespace Game.Presentation.Farm
             }
             if (_readyIcon != null)
             {
-                _readyIcon.transform.localPosition = new Vector3(0, 1.75f + Mathf.Sin(Time.time * 3f + Index) * 0.12f, 0);
+                _readyIcon.transform.localPosition = new Vector3(0, _iconHeight + Mathf.Sin(Time.time * 3f + Index) * 0.12f, 0);
                 _readyIcon.transform.Rotate(0, 90f * Time.deltaTime, 0, Space.World);
             }
         }
@@ -128,6 +155,10 @@ namespace Game.Presentation.Farm
             if (!ready) return;
 
             _readyFx = FxPlayer.Spawn("ready", transform, Vector3.zero);
+            if (_readyFx != null) _readyFx.transform.localScale = Vector3.one * (_size / 1.6f);
+            _iconHeight = 1.0f;
+            if (_model != null)
+                foreach (var r in _model.GetComponentsInChildren<Renderer>()) _iconHeight = Mathf.Max(_iconHeight, r.bounds.max.y - transform.position.y + 0.5f);
             var visuals = GameRoot.Instance != null ? GameRoot.Instance.Visuals : null;
             var productId = cropId != null && GameRoot.Instance.Catalog.TryGetCrop(cropId, out var crop) ? crop.ProductId : null;
             var icon = visuals != null ? visuals.Product(productId) : null;
@@ -151,8 +182,22 @@ namespace Game.Presentation.Farm
             var prefab = visuals != null ? visuals.CropStage(cropId, stage) : null;
             if (prefab != null)
             {
-                _model = Instantiate(prefab, _plantRoot);
-                _model.transform.localRotation = Quaternion.Euler(0, (Index * 47) % 360, 0);
+                // Plantação: grade density × density com leve variação (posição, giro, tamanho) — parece de verdade.
+                _model = new GameObject("Plants");
+                _model.transform.SetParent(_plantRoot, false);
+                int n = visuals.CropDensity(cropId);
+                float step = (_size - 0.5f) / n;
+                var rng = new System.Random(Index * 7919 + stage);
+                for (int ix = 0; ix < n; ix++)
+                for (int iz = 0; iz < n; iz++)
+                {
+                    var plant = Instantiate(prefab, _model.transform);
+                    float jx = (float)(rng.NextDouble() - 0.5) * step * 0.25f;
+                    float jz = (float)(rng.NextDouble() - 0.5) * step * 0.25f;
+                    plant.transform.localPosition = new Vector3(-(_size - 0.5f) * 0.5f + step * (ix + 0.5f) + jx, 0, -(_size - 0.5f) * 0.5f + step * (iz + 0.5f) + jz);
+                    plant.transform.localRotation = Quaternion.Euler(0, (float)rng.NextDouble() * 360f, 0);
+                    plant.transform.localScale = Vector3.one * (0.88f + (float)rng.NextDouble() * 0.24f);
+                }
                 return;
             }
             _model = GrayboxMaterials.Primitive(PrimitiveType.Cylinder, "Plant", _plantRoot, GrayboxMaterials.ColorFor(cropId));

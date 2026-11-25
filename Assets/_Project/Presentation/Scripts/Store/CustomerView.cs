@@ -23,10 +23,12 @@ namespace Game.Presentation.Store
         public int CustomerId { get; private set; }
         public Vector3 Target { get; set; }
         public bool Leaving { get; private set; }
+        /// <summary>Ponto de passagem antes do alvo (a porta), para não atravessar paredes.</summary>
+        private Vector3? _via;
 
         public void Build() { }
 
-        public void Spawn(int customerId, string typeId, Vector3 door)
+        public void Spawn(int customerId, string typeId, Vector3 outside, Vector3 door)
         {
             CustomerId = customerId;
             Leaving = false;
@@ -55,8 +57,9 @@ namespace Game.Presentation.Store
                 _patienceRenderer = _patienceBar.GetComponent<Renderer>();
             }
 
-            transform.position = door;
+            transform.position = outside;
             Target = door;
+            _via = door;
             SetPatience(-1);
             gameObject.SetActive(true);
         }
@@ -66,10 +69,11 @@ namespace Game.Presentation.Store
             if (_animator != null) _animator.SetTrigger(trigger);
         }
 
-        public void Leave(Vector3 door, bool happy)
+        public void Leave(Vector3 door, Vector3 outside, bool happy)
         {
             Leaving = true;
-            Target = door;
+            Target = outside;
+            _via = door;
             SetPatience(-1);
             Trigger(happy ? "yes" : "no");
         }
@@ -94,13 +98,19 @@ namespace Game.Presentation.Store
         public bool Tick(float dt)
         {
             var pos = transform.position;
-            var to = Target - pos;
+            if (_via.HasValue)
+            {
+                var v = _via.Value - pos; v.y = 0;
+                if (v.magnitude < 0.15f) _via = null;
+            }
+            var goal = _via ?? Target;
+            var to = goal - pos;
             to.y = 0;
             float dist = to.magnitude;
             bool moving = dist > 0.05f;
             if (moving)
             {
-                transform.position = Vector3.MoveTowards(pos, Target, Speed * dt);
+                transform.position = Vector3.MoveTowards(pos, goal, Speed * dt);
                 var look = Quaternion.LookRotation(to.normalized, Vector3.up);
                 transform.rotation = Quaternion.Slerp(transform.rotation, look, 10f * dt);
             }
@@ -112,7 +122,7 @@ namespace Game.Presentation.Store
                 var camFwd = Camera.main.transform.forward;
                 _patienceBar.rotation = _patienceBack.rotation = Quaternion.LookRotation(camFwd, Vector3.up);
             }
-            return !moving;
+            return !moving && !_via.HasValue;
         }
     }
 }

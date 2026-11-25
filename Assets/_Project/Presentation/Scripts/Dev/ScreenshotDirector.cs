@@ -5,7 +5,7 @@ using Game.Core.Farm;
 using Game.Core.Inventory;
 using Game.Core.State;
 using Game.Core.Store;
-using Game.Presentation.Controls;
+using Game.Presentation.Player;
 using Game.Presentation.UI;
 using UnityEngine;
 
@@ -51,8 +51,8 @@ namespace Game.Presentation.Dev
             var root = GameRoot.Instance;
             var ctx = root.Context;
             var state = ctx.State;
-            var area = FindFirstObjectByType<AreaSwitcher>();
-            var cam = FindFirstObjectByType<TouchCameraController>();
+            var cam = FindFirstObjectByType<ThirdPersonCamera>();
+            var player = PlayerController.Instance;
 
             // ---------- Cenário ----------
             state.Wallet.Coins = 50_000;
@@ -98,19 +98,31 @@ namespace Game.Presentation.Dev
             root.Catalog.Store.SpawnIntervalSeconds = 1.2;
             state.Store.NextSpawnAtMs = ctx.NowMs;
 
-            // ---------- Fazenda ----------
-            area.Show(GameArea.Farm);
-            cam.SetZoom(17f);
-            yield return new WaitForSeconds(2f);
-            yield return Shot("01_fazenda");
-            cam.SetZoom(cam.MinDistance);
-            yield return new WaitForSeconds(0.8f);
-            yield return Shot("02_fazenda_perto");
-            cam.SetZoom(cam.MaxDistance);
-            yield return new WaitForSeconds(0.8f);
-            yield return Shot("03_fazenda_longe");
+            // Pose: jogadora em pos virada para yaw; câmera atrás dela (camYaw relativo), com pitch e distância.
+            void Pose(Vector3 pos, float yaw, float pitch, float dist, float camYawOffset = 0f)
+            {
+                player.TeleportTo(pos, yaw);
+                cam.Yaw = yaw + camYawOffset;
+                cam.Pitch = pitch;
+                cam.Distance = dist;
+                cam.Snap();
+            }
 
-            cam.SetZoom(17f);
+            // ---------- Fazenda ----------
+            Pose(HudController.FarmSpawn, HudController.FarmSpawnYaw, 16f, 6.5f);
+            yield return new WaitForSeconds(2f);
+            yield return Shot("01_fazenda_portao");
+            Pose(new Vector3(2.25f, 0, -2.25f), 0f, 6f, 3.2f, 35f);
+            yield return new WaitForSeconds(0.8f);
+            yield return Shot("02_plantacao_perto");
+            Pose(new Vector3(0f, 0, -6.75f), 180f, 48f, 9f);
+            yield return new WaitForSeconds(0.8f);
+            yield return Shot("03_fazenda_alto");
+
+            // Perto de uma parcela vazia: botão de ação "Plantar"
+            Pose(new Vector3(4.5f, 0, -2.5f), 0f, 18f, 4.2f, -30f);
+            yield return new WaitForSeconds(0.6f);
+            yield return Shot("04a_botao_acao");
             FindFirstObjectByType<PlantMenu>()?.Open(3);
             yield return new WaitForSeconds(0.5f);
             yield return Shot("04_menu_plantar");
@@ -118,15 +130,15 @@ namespace Game.Presentation.Dev
 
             // Colheita com efeito
             var farmInteraction = FindFirstObjectByType<Game.Presentation.Farm.FarmInteraction>();
+            Pose(new Vector3(9f, 0, -2.3f), 0f, 14f, 3.8f, 25f);
+            yield return new WaitForSeconds(0.6f);
             for (int i = 0; i < state.Farm.Plots.Count; i++)
                 if (FarmRules.GetPhase(state.Farm.Plots[i], ctx.NowMs) == PlotPhase.Ready) { farmInteraction.HandlePlot(i); break; }
             yield return new WaitForSeconds(0.25f);
             yield return Shot("05_colheita_efeito");
 
             // ---------- Animais e vendinha ----------
-            area.Show(GameArea.Farm);
-            cam.FocusOn(new Vector3(-10f, 0, -0.5f));
-            cam.SetZoom(15f);
+            Pose(new Vector3(-14.5f, 0, -3f), -110f, 14f, 6f);
             yield return new WaitForSeconds(1.2f);
             yield return Shot("10_animais");
             var menusFarm = FindFirstObjectByType<StoreMenus>();
@@ -137,20 +149,25 @@ namespace Game.Presentation.Dev
             yield return new WaitForSeconds(0.5f);
             yield return Shot("12_menu_animais");
             menusFarm?.Close();
-            cam.FocusOn(new Vector3(9f, 0, 3f));
-            cam.SetZoom(14f);
+            Pose(new Vector3(18.5f, 0, -4.5f), 0f, 12f, 5.5f, -20f);
             yield return new WaitForSeconds(0.8f);
             yield return Shot("13_vendinha_predio");
 
+            // ---------- Estrada ----------
+            Pose(new Vector3(24f, 0, -11f), 90f, 10f, 5f);
+            yield return new WaitForSeconds(0.8f);
+            yield return Shot("14_estrada");
+
             // ---------- Loja ----------
-            area.Show(GameArea.Store);
-            cam.SetZoom(17f);
+            Pose(HudController.StoreSpawn, HudController.StoreSpawnYaw, 12f, 7.5f, 20f);
             yield return new WaitForSeconds(14f); // clientes entram e fazem fila
-            yield return Shot("06_mercadinho");
-            cam.SetZoom(cam.MinDistance);
+            yield return Shot("06_mercadinho_fachada");
+            Pose(new Vector3(41f, 0, -2f), 0f, 14f, 3.6f);
             yield return new WaitForSeconds(1f);
-            yield return Shot("07_mercadinho_perto");
-            cam.SetZoom(17f);
+            yield return Shot("07_mercadinho_dentro");
+            Pose(new Vector3(36.1f, 0, -3.1f), 0f, 22f, 3.2f, 30f);
+            yield return new WaitForSeconds(1f);
+            yield return Shot("07b_caixa");
 
             var menus = FindFirstObjectByType<StoreMenus>();
             menus?.OpenShelf(0);
@@ -159,6 +176,9 @@ namespace Game.Presentation.Dev
             menus?.OpenSupplier();
             yield return new WaitForSeconds(0.5f);
             yield return Shot("09_menu_fornecedor");
+            menus?.OpenFurniture();
+            yield return new WaitForSeconds(0.5f);
+            yield return Shot("09b_menu_melhorias");
             menus?.Close();
 
             Debug.Log("[Screenshot] Fim.");

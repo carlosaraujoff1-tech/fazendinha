@@ -71,6 +71,13 @@ namespace Game.Editor.Art
 
             material.SetColor("_BaseColor", color);
             if (texture != null) material.SetTexture("_BaseMap", texture);
+            foreach (var key in new[] { "NormalMap", "Bump", "NormalMapTexture" })
+            {
+                if (!description.TryGetProperty(key, out TexturePropertyDescription normal) || normal.texture == null) continue;
+                material.SetTexture("_BumpMap", normal.texture);
+                material.EnableKeyword("_NORMALMAP");
+                break;
+            }
             material.SetFloat("_Smoothness", 0.12f);
             material.SetFloat("_Metallic", 0f);
             material.SetFloat("_EnvironmentReflections", 0f);
@@ -91,6 +98,27 @@ namespace Game.Editor.Art
                 importer.mipmapEnabled = false;
                 importer.filterMode = FilterMode.Point;
                 importer.textureCompression = TextureImporterCompression.Uncompressed; // paleta: compressão borra as cores
+                return;
+            }
+            if (name.Contains("_nor_gl") || name.Contains("_normal"))
+            {
+                importer.textureType = TextureImporterType.NormalMap;
+                importer.maxTextureSize = 1024;
+                return;
+            }
+            if (assetPath.Contains("/PolyHaven/"))
+            {
+                importer.maxTextureSize = 1024;
+                importer.alphaIsTransparency = name.Contains("diffa");
+                return;
+            }
+            if (assetPath.Contains("/Textures/Sky/"))
+            {
+                importer.textureShape = TextureImporterShape.Texture2D;
+                importer.wrapModeU = TextureWrapMode.Repeat;
+                importer.wrapModeV = TextureWrapMode.Clamp;
+                importer.mipmapEnabled = false;
+                importer.maxTextureSize = 2048;
                 return;
             }
             if (assetPath.Contains("/UI/Sprites/"))
@@ -114,8 +142,8 @@ namespace Game.Editor.Art
             {
                 importer.wrapMode = TextureWrapMode.Repeat;
                 importer.mipmapEnabled = true;
-                importer.anisoLevel = 4;
-                importer.maxTextureSize = 512;
+                importer.anisoLevel = 8;
+                importer.maxTextureSize = assetPath.Contains("/PBR/") ? 1024 : 512;
             }
         }
 

@@ -26,18 +26,23 @@ namespace Game.Editor.Art
         private const string ThirdParty = "Assets/ThirdParty/";
 
         // Tamanhos-alvo em metros (1 unidade = 1 m; parcela = 1,6 m).
-        private const float CropFootprint = 1.35f;
-        private static readonly float[] StageHeights = { 0.38f, 0.62f, 0.9f, 1.25f };
+        // Fração da altura real da cultura em cada fase; o canteiro (3,2 m) recebe density × density plantas.
+        private static readonly float[] StageFractions = { 0.22f, 0.45f, 0.72f, 1f };
+        public const float PlotSize = 3.2f;
 
 #pragma warning disable 0649 // preenchidos pelo JsonUtility
         [Serializable] private sealed class Mapping
         {
             public CropEntry[] crops; public ModelEntry[] products; public ModelEntry[] furniture; public ModelEntry cashRegister;
-            public string[] customers; public float characterHeight = 1.25f; public string employee;
+            public string[] customers; public float characterHeight = 1.25f; public string employee; public ModelEntry player;
             public ModelEntry[] decor; public ModelEntry[] animals; public Particles particles; public SoundEntry[] sounds; public UiEntry ui;
         }
-        [Serializable] private sealed class CropEntry { public string crop; public string stages; }
-        [Serializable] private sealed class ModelEntry { public string id; public string model; public float height; public float width; public string animation; }
+        [Serializable] private sealed class CropEntry { public string crop; public string stages; public float height = 1.2f; public int density = 3; }
+        [Serializable] private sealed class ModelEntry
+        {
+            public string id; public string model; public float height; public float width; public string animation;
+            public string tex; public string normal; public bool cutout; public float scale;
+        }
         [Serializable] private sealed class Particles { public string star, circle, dirt, smoke, spark, light; }
         [Serializable] private sealed class SoundEntry { public string id; public string clip; public float volume = 0.8f; }
         [Serializable] private sealed class UiEntry { public string font, buttonGreen, buttonYellow, buttonRed, buttonBlue, buttonGrey, panel; }
@@ -66,9 +71,10 @@ namespace Game.Editor.Art
             // ---------- Materiais base (referenciados = shaders garantidos no build) ----------
             catalog.baseLit = LitMaterial("BaseLit", Color.white, null, Vector2.one);
             catalog.baseUnlit = UnlitMaterial("BaseUnlit", Color.white);
-            var soilTex = AssetDatabase.LoadAssetAtPath<Texture2D>($"{TexturesDir}/soil.png");
-            catalog.soil = LitMaterial("Soil", Color.white, soilTex, Vector2.one);
-            catalog.soilWet = LitMaterial("SoilWet", new Color(0.62f, 0.58f, 0.62f), soilTex, Vector2.one);
+            // Terra arada real (sulcos) e madeira de tábua (Poly Haven, CC0)
+            catalog.soil = PbrMaterial("Soil", "farm_furrows", Vector2.one, Color.white, 0.05f);
+            catalog.soilWet = PbrMaterial("SoilWet", "farm_furrows", Vector2.one, new Color(0.55f, 0.5f, 0.5f), 0.35f);
+            catalog.wood = PbrMaterial("WoodPlanks", "brown_planks_05", new Vector2(1f, 1f), new Color(0.85f, 0.7f, 0.55f), 0.1f);
 
             // ---------- Culturas (4 fases, escala da fase 4) ----------
             foreach (var entry in map.crops ?? new CropEntry[0])
@@ -76,9 +82,10 @@ namespace Game.Editor.Art
                 var models = Enumerable.Range(1, 4).Select(i => LoadModel(string.Format(entry.stages, i))).ToArray();
                 if (models.Any(m => m == null)) { Debug.LogWarning($"[Arte] Faltam fases para '{entry.crop}'."); continue; }
                 // Cada fase com altura própria (os modelos das fases 1-3 do pack são minúsculos): broto legível no celular.
-                var visual = new VisualCatalog.CropVisual { cropId = entry.crop, stages = new GameObject[4] };
+                var visual = new VisualCatalog.CropVisual { cropId = entry.crop, stages = new GameObject[4], density = Mathf.Max(1, entry.density) };
+                float footprint = PlotSize / visual.density * 1.15f;
                 for (int i = 0; i < 4; i++)
-                    visual.stages[i] = SaveWrapper(models[i], FitByHeight(models[i], StageHeights[i], CropFootprint),
+                    visual.stages[i] = SaveWrapper(models[i], FitByHeight(models[i], entry.height * StageFractions[i], footprint),
                         $"{OutDir}/Crops/{entry.crop}_{i + 1}.prefab", true);
                 catalog.crops.Add(visual);
             }
@@ -117,7 +124,9 @@ namespace Game.Editor.Art
                     surfaceSize = new Vector2(b.size.x * 0.8f, b.size.z * 0.6f),
                 });
             }
-            if (map.cashRegister != null && LoadModel(map.cashRegister.model) is GameObject reg)
+            if (map.cashRegister != null && map.cashRegister.model == "builtin:counter")
+                catalog.cashRegister = BuildCounter(map.cashRegister.width > 0 ? map.cashRegister.width : 2f);
+            else if (map.cashRegister != null && LoadModel(map.cashRegister.model) is GameObject reg)
                 catalog.cashRegister = SaveWrapper(reg, FitByWidth(reg, map.cashRegister.width), $"{OutDir}/Furniture/cash_register.prefab", true, addCollider: true);
 
             // ---------- Personagens (um animator para todos: mesmo esqueleto Kenney) ----------
@@ -135,15 +144,29 @@ namespace Game.Editor.Art
                 catalog.employee = SaveWrapper(emp, FitByHeight(emp, map.characterHeight, 2f), $"{OutDir}/Characters/employee.prefab", true,
                     controller: characterController ?? BuildCharacterController(ThirdParty + map.employee));
 
+            // ---------- Jogadora ----------
+            if (map.player != null && LoadModel(map.player.model) is GameObject playerModel)
+                catalog.player = SaveWrapper(playerModel, FitByHeight(playerModel, map.player.height > 0 ? map.player.height : 1.7f, 2f),
+                    $"{OutDir}/Characters/player.prefab", true,
+                    controller: characterController ?? BuildCharacterController(ThirdParty + map.player.model));
+
             // ---------- Cenário ----------
             foreach (var e in map.decor ?? new ModelEntry[0])
             {
                 var model = LoadModel(e.model);
                 if (model == null) { Warn(e.model); continue; }
-                float s = e.height > 0 ? FitByHeight(model, e.height, float.MaxValue) : 1f;
+                float s = e.height > 0 ? FitByHeight(model, e.height, float.MaxValue) : (e.scale > 0 ? e.scale : 1f);
                 AnimatorController ctrl = null;
                 if (!string.IsNullOrEmpty(e.animation)) ctrl = BuildLoopController(ThirdParty + e.model, e.animation, e.id);
-                var prefab = SaveWrapper(model, s, $"{OutDir}/Decor/{e.id}.prefab", castShadows: e.height >= 0.6f || e.height <= 0, controller: ctrl);
+                Material overrideMat = null;
+                if (!string.IsNullOrEmpty(e.tex))
+                {
+                    var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(ThirdParty + e.tex);
+                    var nor = string.IsNullOrEmpty(e.normal) ? null : AssetDatabase.LoadAssetAtPath<Texture2D>(ThirdParty + e.normal);
+                    overrideMat = LitMaterial("Decor_" + e.id, Color.white, tex, Vector2.one, nor, 0.05f, e.cutout);
+                }
+                var prefab = SaveWrapper(model, s, $"{OutDir}/Decor/{e.id}.prefab", castShadows: e.height >= 0.6f || e.height <= 0,
+                    controller: ctrl, overrideMaterial: overrideMat);
                 catalog.decor.Add(new VisualCatalog.IdPrefab { id = e.id, prefab = prefab });
             }
 
@@ -199,7 +222,11 @@ namespace Game.Editor.Art
 
         // ---------------------------------------------------------------- materiais
 
-        public static Material LitMaterial(string name, Color color, Texture texture, Vector2 tiling)
+        public static Material LitMaterial(string name, Color color, Texture texture, Vector2 tiling) =>
+            LitMaterial(name, color, texture, tiling, null, 0.08f, false);
+
+        /// <summary>Material URP Lit (asset) com textura, normal map, suavidade e recorte por alfa opcionais.</summary>
+        public static Material LitMaterial(string name, Color color, Texture texture, Vector2 tiling, Texture normal, float smoothness, bool cutout)
         {
             string path = $"{MaterialsDir}/{name}.mat";
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
@@ -211,7 +238,26 @@ namespace Game.Editor.Art
             mat.SetColor("_BaseColor", color);
             mat.SetTexture("_BaseMap", texture);
             mat.SetTextureScale("_BaseMap", tiling);
-            mat.SetFloat("_Smoothness", 0.08f);
+            mat.SetFloat("_Smoothness", smoothness);
+            if (normal != null)
+            {
+                mat.SetTexture("_BumpMap", normal);
+                mat.SetFloat("_BumpScale", 1f);
+                mat.EnableKeyword("_NORMALMAP");
+            }
+            else
+            {
+                mat.SetTexture("_BumpMap", null);
+                mat.DisableKeyword("_NORMALMAP");
+            }
+            if (cutout)
+            {
+                mat.SetFloat("_AlphaClip", 1f);
+                mat.SetFloat("_Cutoff", 0.45f);
+                mat.SetFloat("_Cull", 0f); // folhas: duas faces
+                mat.EnableKeyword("_ALPHATEST_ON");
+                mat.renderQueue = (int)RenderQueue.AlphaTest;
+            }
             mat.SetFloat("_Metallic", 0f);
             mat.SetFloat("_SpecularHighlights", 0f);
             mat.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
@@ -220,7 +266,16 @@ namespace Game.Editor.Art
             return mat;
         }
 
-        private static Material UnlitMaterial(string name, Color color)
+        /// <summary>Material com o par de texturas PBR baixado (Textures/PBR/&lt;id&gt;_diffuse.jpg + _nor_gl.jpg).</summary>
+        public static Material PbrMaterial(string name, string textureId, Vector2 tiling, Color tint, float smoothness = 0.1f)
+        {
+            var diff = AssetDatabase.LoadAssetAtPath<Texture2D>($"{TexturesDir}/PBR/{textureId}_diffuse.jpg");
+            var nor = AssetDatabase.LoadAssetAtPath<Texture2D>($"{TexturesDir}/PBR/{textureId}_nor_gl.jpg");
+            if (diff == null) Debug.LogWarning($"[Arte] Textura PBR não encontrada: {textureId}");
+            return LitMaterial(name, tint, diff, tiling, nor, smoothness, false);
+        }
+
+        public static Material UnlitMaterial(string name, Color color)
         {
             string path = $"{MaterialsDir}/{name}.mat";
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
@@ -295,7 +350,7 @@ namespace Game.Editor.Art
 
         /// <summary>Prefab próprio: raiz vazia com o modelo do pack como filho, pivô no chão e centralizado.</summary>
         private static GameObject SaveWrapper(GameObject model, float scale, string path, bool castShadows,
-            bool addCollider = false, RuntimeAnimatorController controller = null)
+            bool addCollider = false, RuntimeAnimatorController controller = null, Material overrideMaterial = null)
         {
             var root = new GameObject(Path.GetFileNameWithoutExtension(path));
             var instance = (GameObject)PrefabUtility.InstantiatePrefab(model);
@@ -306,6 +361,12 @@ namespace Game.Editor.Art
 
             foreach (var r in instance.GetComponentsInChildren<Renderer>())
             {
+                if (overrideMaterial != null)
+                {
+                    var mats = r.sharedMaterials;
+                    for (int m = 0; m < mats.Length; m++) mats[m] = overrideMaterial;
+                    r.sharedMaterials = mats;
+                }
                 r.shadowCastingMode = castShadows ? ShadowCastingMode.On : ShadowCastingMode.Off;
                 r.receiveShadows = true;
                 if (r is SkinnedMeshRenderer smr) smr.updateWhenOffscreen = false;
@@ -330,6 +391,42 @@ namespace Game.Editor.Art
                 animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
             }
 
+            var prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
+            Object.DestroyImmediate(root);
+            return prefab;
+        }
+
+        /// <summary>Balcão do caixa: móvel de madeira com tampo claro e a caixa registradora realista (Poly Haven) em cima.</summary>
+        private static GameObject BuildCounter(float width)
+        {
+            var wood = PbrMaterial("CounterWood", "brown_planks_05", new Vector2(2f, 1f), new Color(0.75f, 0.58f, 0.42f));
+            var top = LitMaterial("CounterTop", new Color(0.92f, 0.92f, 0.9f), null, Vector2.one, null, 0.6f, false);
+            var root = new GameObject("cash_register");
+            void Box(string n, Vector3 pos, Vector3 size, Material m)
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.name = n;
+                go.transform.SetParent(root.transform, false);
+                go.transform.localPosition = pos;
+                go.transform.localScale = size;
+                go.GetComponent<Renderer>().sharedMaterial = m;
+                Object.DestroyImmediate(go.GetComponent<Collider>());
+            }
+            Box("Body", new Vector3(0, 0.45f, 0), new Vector3(width, 0.9f, 0.75f), wood);
+            Box("Top", new Vector3(0, 0.93f, 0), new Vector3(width + 0.06f, 0.06f, 0.82f), top);
+            var regModel = LoadModel("PolyHaven/CashRegister_01/CashRegister_01_1k.fbx");
+            if (regModel != null)
+            {
+                var reg = (GameObject)PrefabUtility.InstantiatePrefab(regModel);
+                reg.transform.SetParent(root.transform, false);
+                var b = MeasureBounds(reg);
+                reg.transform.localPosition = new Vector3(-width * 0.25f, 0.96f - b.min.y, 0);
+                reg.transform.localRotation = Quaternion.Euler(0, 180f, 0);
+            }
+            var col = root.AddComponent<BoxCollider>();
+            col.center = new Vector3(0, 0.6f, 0);
+            col.size = new Vector3(width, 1.2f, 0.8f);
+            string path = $"{OutDir}/Furniture/cash_register.prefab";
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, path);
             Object.DestroyImmediate(root);
             return prefab;
@@ -367,8 +464,10 @@ namespace Game.Editor.Art
         private static VisualCatalog.FurnitureVisual BuildStall(string id, string style, float width)
         {
             bool wood = style == "wood";
-            var body = LitMaterial(wood ? "StallWood" : "StallMetal", wood ? new Color(0.66f, 0.46f, 0.28f) : new Color(0.78f, 0.82f, 0.92f), null, Vector2.one);
-            var dark = LitMaterial(wood ? "StallWoodDark" : "StallMetalDark", wood ? new Color(0.45f, 0.3f, 0.18f) : new Color(0.5f, 0.55f, 0.68f), null, Vector2.one);
+            var body = wood ? PbrMaterial("StallWood", "brown_planks_05", new Vector2(2f, 1f), new Color(0.9f, 0.72f, 0.52f))
+                            : LitMaterial("StallMetal", new Color(0.82f, 0.84f, 0.88f), null, Vector2.one, null, 0.55f, false);
+            var dark = wood ? PbrMaterial("StallWoodDark", "brown_planks_05", new Vector2(1f, 1f), new Color(0.55f, 0.4f, 0.28f))
+                            : LitMaterial("StallMetalDark", new Color(0.45f, 0.48f, 0.52f), null, Vector2.one, null, 0.6f, false);
             var sign = LitMaterial(wood ? "StallSignGreen" : "StallSignBlue", wood ? new Color(0.25f, 0.62f, 0.32f) : new Color(0.25f, 0.45f, 0.8f), null, Vector2.one);
             const float depth = 1.0f, top = 0.9f;
             var root = new GameObject(id);

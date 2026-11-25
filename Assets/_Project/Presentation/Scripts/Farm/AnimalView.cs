@@ -1,13 +1,15 @@
 using Game.Core.Animals;
 using Game.Core.State;
 using Game.Presentation.Effects;
+using Game.Core.Display;
 using Game.Presentation.Graybox;
+using Game.Presentation.Player;
 using UnityEngine;
 
 namespace Game.Presentation.Farm
 {
     /// <summary>Um animal: modelo animado que passeia devagar perto de casa + indicador de estado.</summary>
-    public sealed class AnimalView : MonoBehaviour
+    public sealed class AnimalView : InteractableBehaviour
     {
         private Vector3 _home;
         private Vector3 _target;
@@ -20,6 +22,29 @@ namespace Game.Presentation.Farm
         private string _typeId;
 
         public int Index { get; private set; }
+
+        public override float InteractionRadius => _typeId == "galinha" ? 1.6f : 2.4f;
+
+        public override string Prompt(PlayerContext player)
+        {
+            var root = GameRoot.Instance;
+            var animals = root.State.Farm.Animals;
+            if (Index >= animals.Count || !root.Catalog.TryGetAnimal(_typeId, out var def)) return null;
+            var a = animals[Index];
+            switch (AnimalRules.GetPhase(a, root.NowMs))
+            {
+                case AnimalPhase.Hungry:
+                    string food = root.Catalog.TryGetProduct(def.FeedProductIds[0], out var f) ? f.Name : "comida";
+                    return $"Alimentar {def.Name} ({def.FeedPerCycle} {food})";
+                case AnimalPhase.Producing: return $"{def.Name} · {DisplayFormat.Duration(AnimalRules.RemainingMs(a, root.NowMs))}";
+                default:
+                    string prod = root.Catalog.TryGetProduct(def.ProductId, out var p) ? p.Name : def.ProductId;
+                    return $"Coletar {def.Yield} {prod}";
+            }
+        }
+
+        public override void Interact(PlayerContext player) =>
+            FindFirstObjectByType<FarmInteraction>()?.HandleAnimal(Index, transform.position);
 
         public void Build(int index, string typeId, Vector3 home)
         {

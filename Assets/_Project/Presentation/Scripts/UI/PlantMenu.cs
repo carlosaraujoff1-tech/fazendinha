@@ -15,9 +15,12 @@ namespace Game.Presentation.UI
         private RectTransform _list;
         private readonly List<(CropDef crop, Button button)> _buttons = new List<(CropDef, Button)>();
         private int _plotIndex = -1;
+        private static PlantMenu _instance;
+        public static bool IsOpen => _instance != null && _instance._panel != null && _instance._panel.activeSelf;
 
         private void Start()
         {
+            _instance = this;
             var root = GameRoot.Instance;
             var panel = UiFactory.Panel("PlantMenu", transform, UiFactory.MenuColor);
             ((RectTransform)panel.transform).Anchor(new Vector2(0.2f, 0.14f), new Vector2(0.8f, 0.88f));

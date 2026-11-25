@@ -9,8 +9,8 @@ namespace Game.Presentation.Farm
     public sealed class FarmView : MonoBehaviour
     {
         [SerializeField] private int columns = 5;
-        [SerializeField] private float plotSize = 1.6f;
-        [SerializeField] private float gap = 0.4f;
+        [SerializeField] private float plotSize = 3.2f;
+        [SerializeField] private float gap = 1.3f;
         [SerializeField] private float refreshSeconds = 0.2f;
 
         private readonly List<PlotView> _plots = new List<PlotView>();

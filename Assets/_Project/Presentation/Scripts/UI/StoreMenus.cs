@@ -25,9 +25,12 @@ namespace Game.Presentation.UI
         private readonly List<GameObject> _rows = new List<GameObject>();
         private Action _refresh;
         private float _nextRefresh;
+        private static StoreMenus _instance;
+        public static bool IsOpen => _instance != null && _instance._panel != null && _instance._panel.activeSelf;
 
         private void Start()
         {
+            _instance = this;
             var panel = UiFactory.Panel("StoreMenu", transform, UiFactory.MenuColor);
             ((RectTransform)panel.transform).Anchor(new Vector2(0.18f, 0.14f), new Vector2(0.82f, 0.88f));
             _panel = panel.gameObject;
@@ -165,7 +168,7 @@ namespace Game.Presentation.UI
 
         // ---------- Móveis ----------
 
-        public void OpenFurniture() => Show("Melhorias da loja", BuildFurniture);
+        public void OpenFurniture() => Show("Melhorias", BuildFurniture);
 
         // ---------- Vendinha de sementes ----------
 
@@ -240,6 +243,11 @@ namespace Game.Presentation.UI
         private void BuildFurniture()
         {
             var root = GameRoot.Instance;
+            var economy = root.Catalog.Economy;
+            bool plotsMax = root.State.Farm.Plots.Count >= economy.MaxPlots;
+            long plotCost = FarmRules.NextPlotCost(root.State, economy);
+            Row(plotsMax ? "Fazenda: máximo de parcelas" : $"Fazenda: + 1 parcela · {DisplayFormat.Coins(plotCost)} ({root.State.Farm.Plots.Count}/{economy.MaxPlots})",
+                () => root.Execute(new BuyPlotCommand()), !plotsMax && root.State.Wallet.Coins >= plotCost);
             foreach (var staff in root.Catalog.Staff)
             {
                 var s = staff;

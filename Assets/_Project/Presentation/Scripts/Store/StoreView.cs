@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Game.Core.Display;
 using Game.Core.Staff;
 using Game.Core.Store;
-using Game.Presentation.Controls;
 using Game.Presentation.Effects;
 using Game.Presentation.Graybox;
 using Game.Presentation.UI;
@@ -13,7 +12,8 @@ namespace Game.Presentation.Store
 {
     /// <summary>
     /// Loja: móveis em grade, caixa registradora, funcionário do caixa (se contratado) e clientes animados que
-    /// entram pela porta do fundo, vão às prateleiras, fazem fila e saem. Só lê estado/eventos do Core.
+    /// entram pela porta da frente (-z, voltada para a estrada), vão às prateleiras, fazem fila e saem.
+    /// Só lê estado/eventos do Core. Medidas locais: fundo z=+5, frente z=-15, laterais x=±6 (ver SceneGenerator).
     /// </summary>
     public sealed class StoreView : MonoBehaviour
     {
@@ -32,10 +32,11 @@ namespace Game.Presentation.Store
         private Animator _employeeAnimator;
         private float _nextRefresh;
 
-        private Vector3 Door => transform.position + new Vector3(0, 0, 4.6f);
-        private Vector3 Outside => transform.position + new Vector3(0, 0, 8f);
-        // Caixa no corredor esquerdo, perto da câmera; a fila sobe pelo corredor em direção ao fundo.
-        private Vector3 CounterPos => transform.position + new Vector3(-3.7f, 0, -9.6f);
+        public const float BackZ = 5f, FrontZ = -15f, HalfWidth = 6f, DoorX = 1f, DoorWidth = 3f;
+        private Vector3 Door => transform.position + new Vector3(DoorX, 0, FrontZ + 0.5f);
+        private Vector3 Outside => transform.position + new Vector3(DoorX + 1.5f, 0, FrontZ - 5f);
+        // Caixa perto da entrada, no corredor esquerdo; a fila sobe pelo corredor em direção ao fundo.
+        public Vector3 CounterPos => transform.position + new Vector3(-3.9f, 0, -11.6f);
         private Vector3 QueueStart => CounterPos + new Vector3(0.1f, 0, 1.3f);
 
         private void Start()
@@ -70,12 +71,6 @@ namespace Game.Presentation.Store
             _subs.Add(events.Subscribe<CustomerLeft>(OnCustomerLeft));
             RebuildShelves();
 
-            var area = FindFirstObjectByType<AreaSwitcher>();
-            if (area != null)
-            {
-                var c = transform.position;
-                area.SetBounds(GameArea.Store, Rect.MinMaxRect(c.x - 3, c.z - 9, c.x + 3, c.z + 1));
-            }
         }
 
         private void OnDestroy()
@@ -87,7 +82,7 @@ namespace Game.Presentation.Store
         {
             int col = index % columns, row = index / columns;
             float width = (columns - 1) * spacingX;
-            return transform.position + new Vector3(col * spacingX - width * 0.5f + 0.6f, 0, -0.6f - row * spacingZ);
+            return transform.position + new Vector3(col * spacingX - width * 0.5f + 0.8f, 0, 3.2f - row * spacingZ);
         }
 
         private void RebuildShelves()
@@ -148,7 +143,7 @@ namespace Game.Presentation.Store
                 if (!_customers.TryGetValue(c.Id, out var view))
                 {
                     view = _pool.Count > 0 ? _pool.Pop() : CreateView();
-                    view.Spawn(c.Id, c.TypeId, Outside);
+                    view.Spawn(c.Id, c.TypeId, Outside, Door);
                     _customers[c.Id] = view;
                 }
 
@@ -221,7 +216,7 @@ namespace Game.Presentation.Store
             }
             if (e.Reason == LeaveReason.OutOfPatience)
                 FloatingTextLayer.Show(view.transform.position, "Demorou demais!", new Color(1f, 0.5f, 0.45f));
-            view.Leave(Outside, happy);
+            view.Leave(Door, Outside, happy);
             _leaving.Add(view);
         }
 
