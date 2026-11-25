@@ -21,6 +21,10 @@ namespace Game.Presentation.Player
         private Transform _camera;
         private float _vertical;
         private float _animSpeed;
+        private float _stepDistance;
+        private int _stepIndex;
+        private float _nextSave;
+        private const string PosKey = "player_pos";
 
         public static PlayerController Instance { get; private set; }
         public PlayerContext Context { get; private set; }
@@ -56,6 +60,49 @@ namespace Game.Presentation.Player
                 body.transform.localScale = new Vector3(0.6f, 0.85f, 0.6f);
             }
             if (Camera.main != null) _camera = Camera.main.transform;
+            RestorePosition();
+        }
+
+        // ---------- Posição salva (por aparelho; não faz parte da regra do jogo) ----------
+        private void RestorePosition()
+        {
+            if (Game.Presentation.Dev.ScreenshotDirector.Active) return;
+            try
+            {
+                var raw = PlayerPrefs.GetString(PosKey, "");
+                var parts = raw.Split(';');
+                if (parts.Length != 4) return;
+                var ci = System.Globalization.CultureInfo.InvariantCulture;
+                var pos = new Vector3(float.Parse(parts[0], ci), float.Parse(parts[1], ci) + 0.05f, float.Parse(parts[2], ci));
+                if (float.IsNaN(pos.x) || pos.y < -5f || pos.y > 20f) return;
+                TeleportTo(pos, float.Parse(parts[3], ci));
+                var cam = FindFirstObjectByType<ThirdPersonCamera>();
+                if (cam != null) { cam.Yaw = transform.eulerAngles.y; cam.Snap(); }
+            }
+            catch (System.Exception) { /* posição inválida: começa no ponto padrão */ }
+        }
+
+        private void SavePosition()
+        {
+            var ci = System.Globalization.CultureInfo.InvariantCulture;
+            var p = transform.position;
+            PlayerPrefs.SetString(PosKey, string.Format(ci, "{0:0.##};{1:0.##};{2:0.##};{3:0}", p.x, p.y, p.z, transform.eulerAngles.y));
+        }
+
+        private void OnApplicationPause(bool paused) { if (paused) { SavePosition(); PlayerPrefs.Save(); } }
+        private void OnApplicationQuit() { SavePosition(); PlayerPrefs.Save(); }
+
+        // ---------- Passos ----------
+        private void Footsteps(float speed)
+        {
+            if (speed < 0.3f || !_cc.isGrounded) { _stepDistance = 0f; return; }
+            _stepDistance += speed * Time.deltaTime;
+            float stride = speed > walkSpeed + 0.3f ? 1.15f : 0.75f;
+            if (_stepDistance < stride) return;
+            _stepDistance = 0f;
+            _stepIndex = (_stepIndex + 1 + Random.Range(0, 3)) % 5;
+            string surface = FootstepSurfaces.IsHard(transform.position) ? "step_hard" : "step_grass";
+            Game.Presentation.Effects.SoundPlayer.Play(surface + _stepIndex);
         }
 
         private void OnDestroy() { if (Instance == this) Instance = null; }
@@ -98,6 +145,13 @@ namespace Game.Presentation.Player
             float target = CurrentSpeed < 0.1f ? 0f : CurrentSpeed < walkSpeed + 0.3f ? 0.5f : 1f;
             _animSpeed = Mathf.MoveTowards(_animSpeed, target, Time.deltaTime * 4f);
             if (_animator != null) _animator.SetFloat(SpeedParam, _animSpeed);
+            Footsteps(CurrentSpeed);
+
+            if (Time.unscaledTime >= _nextSave)
+            {
+                _nextSave = Time.unscaledTime + 5f;
+                SavePosition();
+            }
         }
     }
 }

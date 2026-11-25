@@ -470,6 +470,56 @@
       "id": "error",
       "clip": "Kenney/Sounds/error_004.ogg",
       "volume": 0.6
+    },
+    {
+      "id": "step_grass0",
+      "clip": "Kenney/Sounds/footstep_grass_000.ogg",
+      "volume": 0.3
+    },
+    {
+      "id": "step_grass1",
+      "clip": "Kenney/Sounds/footstep_grass_001.ogg",
+      "volume": 0.3
+    },
+    {
+      "id": "step_grass2",
+      "clip": "Kenney/Sounds/footstep_grass_002.ogg",
+      "volume": 0.3
+    },
+    {
+      "id": "step_grass3",
+      "clip": "Kenney/Sounds/footstep_grass_003.ogg",
+      "volume": 0.3
+    },
+    {
+      "id": "step_grass4",
+      "clip": "Kenney/Sounds/footstep_grass_004.ogg",
+      "volume": 0.3
+    },
+    {
+      "id": "step_hard0",
+      "clip": "Kenney/Sounds/footstep_concrete_000.ogg",
+      "volume": 0.3
+    },
+    {
+      "id": "step_hard1",
+      "clip": "Kenney/Sounds/footstep_concrete_001.ogg",
+      "volume": 0.3
+    },
+    {
+      "id": "step_hard2",
+      "clip": "Kenney/Sounds/footstep_concrete_002.ogg",
+      "volume": 0.3
+    },
+    {
+      "id": "step_hard3",
+      "clip": "Kenney/Sounds/footstep_concrete_003.ogg",
+      "volume": 0.3
+    },
+    {
+      "id": "step_hard4",
+      "clip": "Kenney/Sounds/footstep_concrete_004.ogg",
+      "volume": 0.3
     }
   ],
   "ui": {

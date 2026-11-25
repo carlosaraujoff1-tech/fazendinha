@@ -20,6 +20,9 @@ namespace Game.Presentation.Dev
     {
         private string _outDir;
 
+        /// <summary>Modo de capturas ligado (pela linha de comando).</summary>
+        public static bool Active => !string.IsNullOrEmpty(Arg("-fazendaScreenshots"));
+
         private void Start()
         {
             _outDir = Arg("-fazendaScreenshots");

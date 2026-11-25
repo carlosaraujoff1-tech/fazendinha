@@ -13,7 +13,14 @@ namespace Game.Presentation.Effects
         private AudioSource _source;
         private float _lastScan;
 
-        public static bool Muted { get; set; }
+        private static bool? _muted;
+
+        /// <summary>Som desligado (salvo no aparelho).</summary>
+        public static bool Muted
+        {
+            get => _muted ?? (bool)(_muted = PlayerPrefs.GetInt("sound_muted", 0) == 1);
+            set { _muted = value; PlayerPrefs.SetInt("sound_muted", value ? 1 : 0); PlayerPrefs.Save(); }
+        }
 
         private void Awake()
         {

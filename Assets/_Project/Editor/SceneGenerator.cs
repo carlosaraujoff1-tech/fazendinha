@@ -77,6 +77,7 @@ namespace Game.Editor
             rootGo.AddComponent<Bootstrap>();
             rootGo.AddComponent<FxPlayer>();
             rootGo.AddComponent<SoundPlayer>();
+            rootGo.AddComponent<GraphicsQuality>();
             rootGo.AddComponent<ScreenshotDirector>();
 
             // ---------- Fazenda ----------
@@ -97,6 +98,21 @@ namespace Game.Editor
             BuildRoads();
             PlaceDecor(visuals);
 
+            // ---------- Pisos duros (som de passo) ----------
+            var surfaces = new GameObject("FootstepSurfaces").AddComponent<FootstepSurfaces>();
+            var sso = new SerializedObject(surfaces);
+            var areas = sso.FindProperty("hardAreas");
+            var hard = new[]
+            {
+                Rect.MinMaxRect(11f, RoadZ - RoadWidth * 0.5f, 56f, RoadZ + RoadWidth * 0.5f),
+                Rect.MinMaxRect(StoreOrigin.x - StoreView.HalfWidth - 1.5f, StoreOrigin.z + StoreView.FrontZ - 6.4f,
+                                StoreOrigin.x + StoreView.HalfWidth + 1.5f, StoreOrigin.z + StoreView.BackZ),
+                Rect.MinMaxRect(17.5f, -9f, 20.5f, -1.7f),
+            };
+            areas.arraySize = hard.Length;
+            for (int i = 0; i < hard.Length; i++) areas.GetArrayElementAtIndex(i).rectValue = hard[i];
+            sso.ApplyModifiedPropertiesWithoutUndo();
+
             // ---------- Jogadora e câmera ----------
             var playerGo = new GameObject("Player");
             playerGo.transform.SetPositionAndRotation(HudController.FarmSpawn, Quaternion.Euler(0, HudController.FarmSpawnYaw, 0));
@@ -112,7 +128,7 @@ namespace Game.Editor
             camera.farClipPlane = 320f;
             var camData = cameraGo.AddComponent<UniversalAdditionalCameraData>();
             camData.renderPostProcessing = true;
-            camData.antialiasing = AntialiasingMode.FastApproximateAntialiasing;
+            camData.antialiasing = AntialiasingMode.None; // MSAA do URP já suaviza
             cameraGo.AddComponent<AudioListener>();
             var tpc = cameraGo.AddComponent<ThirdPersonCamera>();
             SetRef(tpc, "target", playerGo.transform);
@@ -511,6 +527,12 @@ namespace Game.Editor
             col.size = new Vector3(Mathf.Abs(size.x) * shrink, Mathf.Abs(size.y), Mathf.Abs(size.z) * shrink);
         }
 
+        private static void NoShadow(GameObject go)
+        {
+            if (go == null) return;
+            foreach (var r in go.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.Off;
+        }
+
         /// <summary>Tronco: cápsula fina no pé da árvore.</summary>
         private static void Trunk(GameObject go, float radius)
         {
@@ -525,6 +547,8 @@ namespace Game.Editor
         private static void PlaceDecor(VisualCatalog v)
         {
             var root = new GameObject("Decor").transform;
+            // Capim e arbustos ficam num grupo próprio: a qualidade gráfica liga/desliga parte deles.
+            var clutter = new GameObject("Clutter").transform;
 
             // Construções da fazenda (com colisão)
             Solid(Place(v, "barn", new Vector3(-2f, 0, 10f), 180, root), 0.9f);
@@ -593,7 +617,7 @@ namespace Game.Editor
                 float x = (float)(rng.NextDouble() * 100 - 40);
                 float z = (float)(rng.NextDouble() * 70 - 40);
                 if (!Free(x, z, 1f)) continue;
-                Place(v, shrubs[rng.Next(shrubs.Length)], new Vector3(x, 0, z), (float)(rng.NextDouble() * 360), root, 0.8f + (float)rng.NextDouble() * 0.6f);
+                NoShadow(Place(v, shrubs[rng.Next(shrubs.Length)], new Vector3(x, 0, z), (float)(rng.NextDouble() * 360), clutter, 0.8f + (float)rng.NextDouble() * 0.6f));
                 n++;
             }
             for (int n = 0, tries = 0; n < 10 && tries < 2000; tries++)
@@ -606,19 +630,19 @@ namespace Game.Editor
             }
 
             // Tufos de capim (recorte por alfa, instanciados) — dão volume ao gramado
-            for (int n = 0, tries = 0; n < 320 && tries < 8000; tries++)
+            for (int n = 0, tries = 0; n < 220 && tries < 8000; tries++)
             {
                 float x = (float)(rng.NextDouble() * 90 - 35);
                 float z = (float)(rng.NextDouble() * 60 - 35);
                 if (!Free(x, z, 0.2f)) continue;
-                Place(v, "grassClump", new Vector3(x, 0, z), (float)(rng.NextDouble() * 360), root, 0.7f + (float)rng.NextDouble() * 0.6f);
+                NoShadow(Place(v, "grassClump", new Vector3(x, 0, z), (float)(rng.NextDouble() * 360), clutter, 0.7f + (float)rng.NextDouble() * 0.6f));
                 n++;
             }
             // Capim ao longo das cercas da fazenda
             for (float x = -11.5f; x <= 11.5f; x += 1.3f)
             {
-                Place(v, "grassClump", new Vector3(x + (float)rng.NextDouble() * 0.4f, 0, 3.4f), (float)(rng.NextDouble() * 360), root);
-                Place(v, "grassClump", new Vector3(x + (float)rng.NextDouble() * 0.4f, 0, -17f), (float)(rng.NextDouble() * 360), root);
+                NoShadow(Place(v, "grassClump", new Vector3(x + (float)rng.NextDouble() * 0.4f, 0, 3.4f), (float)(rng.NextDouble() * 360), clutter));
+                NoShadow(Place(v, "grassClump", new Vector3(x + (float)rng.NextDouble() * 0.4f, 0, -17f), (float)(rng.NextDouble() * 360), clutter));
             }
         }
 

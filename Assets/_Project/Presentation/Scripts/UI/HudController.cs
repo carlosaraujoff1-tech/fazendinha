@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Text;
 using Game.Core.Display;
 using Game.Core.Farm;
@@ -16,7 +15,7 @@ namespace Game.Presentation.UI
     /// </summary>
     public sealed class HudController : MonoBehaviour
     {
-        [SerializeField] private float refreshSeconds = 0.2f;
+        [SerializeField] private float refreshSeconds = 0.5f;
 
         public static Vector3 FarmSpawn = new Vector3(14f, 0f, -11f);
         public static float FarmSpawnYaw = -90f;
@@ -30,7 +29,11 @@ namespace Game.Presentation.UI
         private Text _viewLabel;
         private float _nextRefresh;
         private bool _atStore;
+        private bool? _shownAtStore;
+        private long _shownCoins = -1;
+        private int _shownLevel = -1;
         private readonly StringBuilder _sb = new StringBuilder(256);
+        private readonly int[] _top = new int[4], _topN = new int[4];
 
         private void Start()
         {
@@ -122,11 +125,20 @@ namespace Game.Presentation.UI
         {
             var root = GameRoot.Instance;
             var s = root.State;
-            _coins.text = $"Moedas {DisplayFormat.Coins(s.Wallet.Coins)}   ·   Nível {s.Progress.Level}";
+            if (s.Wallet.Coins != _shownCoins || s.Progress.Level != _shownLevel)
+            {
+                _shownCoins = s.Wallet.Coins;
+                _shownLevel = s.Progress.Level;
+                _coins.text = $"Moedas {DisplayFormat.Coins(_shownCoins)}   ·   Nível {_shownLevel}";
+            }
 
             var p = PlayerController.Instance;
             if (p != null) _atStore = p.transform.position.x > 26f;
-            UiFactory.SetButton(_travel, _atStore ? "Ir à fazenda" : "Ir ao mercadinho", true, ButtonStyle.Yellow);
+            if (_atStore != _shownAtStore)
+            {
+                _shownAtStore = _atStore;
+                UiFactory.SetButton(_travel, _atStore ? "Ir à fazenda" : "Ir ao mercadinho", true, ButtonStyle.Yellow);
+            }
 
             _sb.Clear();
             if (_atStore)
@@ -140,23 +152,45 @@ namespace Game.Presentation.UI
             {
                 _sb.Append("Armazém: ");
                 long now = root.NowMs;
-                int shown = 0, more = 0;
-                foreach (var product in root.Catalog.Products.OrderByDescending(pr => root.Context.Warehouse.Count(pr.Id, now)))
+                // Os 4 produtos com mais estoque, sem LINQ (evita lixo de memória a cada atualização).
+                var products = root.Catalog.Products;
+                int count = products.Count, shown = 0, more = 0;
+                for (int k = 0; k < _top.Length; k++) { _top[k] = -1; _topN[k] = 0; }
+                for (int i = 0; i < count; i++)
                 {
-                    int n = root.Context.Warehouse.Count(product.Id, now);
+                    int n = root.Context.Warehouse.Count(products[i].Id, now);
                     if (n <= 0) continue;
-                    if (shown >= 4) { more++; continue; }
+                    more++;
+                    for (int k = 0; k < _top.Length; k++)
+                    {
+                        if (n <= _topN[k]) continue;
+                        for (int m = _top.Length - 1; m > k; m--) { _top[m] = _top[m - 1]; _topN[m] = _topN[m - 1]; }
+                        _top[k] = i; _topN[k] = n;
+                        break;
+                    }
+                }
+                for (int k = 0; k < _top.Length; k++)
+                {
+                    if (_top[k] < 0) continue;
                     if (shown > 0) _sb.Append("  ");
-                    _sb.Append(product.Name).Append(' ').Append(n);
+                    _sb.Append(products[_top[k]].Name).Append(' ').Append(_topN[k]);
                     shown++;
                 }
+                more -= shown;
                 if (shown == 0) _sb.Append("vazio");
                 if (more > 0) _sb.Append("  +").Append(more);
                 int seeds = 0;
                 foreach (var kv in s.Farm.Seeds) seeds += kv.Value;
                 _sb.Append("   ·   Sementes ").Append(seeds);
             }
-            _info.text = _sb.ToString();
+            if (!StringBuilderEquals(_sb, _info.text)) _info.text = _sb.ToString();
+        }
+
+        private static bool StringBuilderEquals(StringBuilder sb, string text)
+        {
+            if (text == null || sb.Length != text.Length) return false;
+            for (int i = 0; i < text.Length; i++) if (sb[i] != text[i]) return false;
+            return true;
         }
     }
 }

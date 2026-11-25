@@ -54,7 +54,7 @@ namespace Game.Presentation.UI
         private void Update()
         {
             if (!_panel.activeSelf || _refresh == null || Time.unscaledTime < _nextRefresh) return;
-            _nextRefresh = Time.unscaledTime + 0.3f;
+            _nextRefresh = Time.unscaledTime + 0.6f;
             _refresh();
         }
 
@@ -269,6 +269,17 @@ namespace Game.Presentation.UI
                     () => root.Execute(new BuyFurnitureCommand(f.Id)),
                     !atMax && root.State.Wallet.Coins >= cost);
             }
+
+            // Opções do aparelho
+            var g = Game.Presentation.Effects.GraphicsQuality.Level;
+            string Mark(Game.Presentation.Effects.GraphicsLevel l) =>
+                (l == g ? "[ATUAL] " : "") + Game.Presentation.Effects.GraphicsQuality.Name(l);
+            Info("Gráficos (mais baixo = mais fluido)");
+            PairRow(Mark(Game.Presentation.Effects.GraphicsLevel.Baixo), () => Game.Presentation.Effects.GraphicsQuality.Set(Game.Presentation.Effects.GraphicsLevel.Baixo), true,
+                Mark(Game.Presentation.Effects.GraphicsLevel.Medio), () => Game.Presentation.Effects.GraphicsQuality.Set(Game.Presentation.Effects.GraphicsLevel.Medio));
+            Row(Mark(Game.Presentation.Effects.GraphicsLevel.Alto), () => Game.Presentation.Effects.GraphicsQuality.Set(Game.Presentation.Effects.GraphicsLevel.Alto));
+            Row(Game.Presentation.Effects.SoundPlayer.Muted ? "Som: desligado (tocar para ligar)" : "Som: ligado (tocar para desligar)",
+                () => Game.Presentation.Effects.SoundPlayer.Muted = !Game.Presentation.Effects.SoundPlayer.Muted);
         }
 
         public static string TagText(PriceTag tag)
