@@ -115,6 +115,11 @@ namespace Game.Presentation.Dev
             Pose(new Vector3(2.25f, 0, -2.25f), 0f, 6f, 3.2f, 35f);
             yield return new WaitForSeconds(0.8f);
             yield return Shot("02_plantacao_perto");
+            Pose(new Vector3(-2.25f, 0, -2.25f), 20f, 12f, 3f);
+            cam.FirstPerson = true;
+            yield return new WaitForSeconds(0.5f);
+            yield return Shot("02b_primeira_pessoa");
+            cam.FirstPerson = false;
             Pose(new Vector3(0f, 0, -6.75f), 180f, 48f, 9f);
             yield return new WaitForSeconds(0.8f);
             yield return Shot("03_fazenda_alto");

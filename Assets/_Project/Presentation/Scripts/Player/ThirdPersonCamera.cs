@@ -21,6 +21,20 @@ namespace Game.Presentation.Player
 
         private Vector3 _focus;
         private float _currentDistance;
+        private bool _firstPerson;
+
+        /// <summary>Primeira pessoa: câmera nos olhos da jogadora (corpo escondido).</summary>
+        public bool FirstPerson
+        {
+            get => _firstPerson;
+            set
+            {
+                _firstPerson = value;
+                if (target != null)
+                    foreach (var r in target.GetComponentsInChildren<Renderer>(true)) r.enabled = !value;
+                Snap();
+            }
+        }
 
         public float Yaw { get => yaw; set => yaw = value; }
         public float Pitch { get => pitch; set => pitch = Mathf.Clamp(value, minPitch, maxPitch); }
@@ -48,7 +62,8 @@ namespace Game.Presentation.Player
             var look = LookArea.ConsumeLook();
             yaw += look.x;
             pitch = Mathf.Clamp(pitch + look.y, minPitch, maxPitch);
-            distance = Mathf.Clamp(distance + LookArea.ConsumeZoom(), minDistance, maxDistance);
+            float zoom = LookArea.ConsumeZoom();
+            if (!_firstPerson) distance = Mathf.Clamp(distance + zoom, minDistance, maxDistance);
 
             var desired = target.position + Vector3.up * height;
             _focus = Vector3.Lerp(_focus, desired, 1f - Mathf.Exp(-followSharpness * Time.deltaTime));
@@ -58,6 +73,12 @@ namespace Game.Presentation.Player
         private void Apply()
         {
             var rot = Quaternion.Euler(pitch, yaw, 0f);
+            if (_firstPerson && target != null)
+            {
+                // Olhos: um pouco acima do foco e levemente à frente, sem suavização (evita enjoo).
+                transform.SetPositionAndRotation(target.position + Vector3.up * 1.6f + target.forward * 0.12f, rot);
+                return;
+            }
             var dir = rot * Vector3.back;
             float wanted = distance;
             // Não atravessar parede/teto: encurta até o primeiro obstáculo (ignora a própria jogadora).

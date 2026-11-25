@@ -27,6 +27,7 @@ namespace Game.Presentation.UI
         private Button _action;
         private Text _actionLabel;
         private Button _travel;
+        private Text _viewLabel;
         private float _nextRefresh;
         private bool _atStore;
         private readonly StringBuilder _sb = new StringBuilder(256);
@@ -68,6 +69,11 @@ namespace Game.Presentation.UI
             _actionLabel = _action.GetComponentInChildren<Text>();
             _action.gameObject.SetActive(false);
 
+            // Alternar 1ª / 3ª pessoa
+            var view = UiFactory.MakeButton("View", transform, "1ª pessoa", ToggleView, 24, ButtonStyle.Grey);
+            ((RectTransform)view.transform).Anchor(new Vector2(0.86f, 0.23f), new Vector2(0.97f, 0.31f));
+            _viewLabel = view.GetComponentInChildren<Text>();
+
             Refresh();
         }
 
@@ -80,6 +86,14 @@ namespace Game.Presentation.UI
             else p.TeleportTo(FarmSpawn, FarmSpawnYaw);
             var cam = FindFirstObjectByType<ThirdPersonCamera>();
             if (cam != null) { cam.Yaw = p.transform.eulerAngles.y; cam.Snap(); }
+        }
+
+        private void ToggleView()
+        {
+            var cam = FindFirstObjectByType<ThirdPersonCamera>();
+            if (cam == null) return;
+            cam.FirstPerson = !cam.FirstPerson;
+            _viewLabel.text = cam.FirstPerson ? "3ª pessoa" : "1ª pessoa";
         }
 
         private void Update()
