@@ -58,7 +58,6 @@
     { "id": "flowerY",   "model": "Kenney/Nature/flower_yellowA.fbx",       "height": 0.45 },
     { "id": "flowerP",   "model": "Kenney/Nature/flower_purpleA.fbx",       "height": 0.45 },
     { "id": "grass",     "model": "Kenney/Nature/grass_large.fbx",          "height": 0.4 },
-    { "id": "rockL",     "model": "Kenney/Nature/rock_largeA.fbx",          "height": 1.2 },
     { "id": "rockS1",    "model": "Kenney/Nature/rock_smallA.fbx",          "height": 0.35 },
     { "id": "rockS2",    "model": "Kenney/Nature/rock_smallB.fbx",          "height": 0.3 },
     { "id": "stump",     "model": "Kenney/Nature/stump_round.fbx",          "height": 0.5 },

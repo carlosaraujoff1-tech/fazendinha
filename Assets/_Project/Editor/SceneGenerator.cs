@@ -310,7 +310,7 @@ namespace Game.Editor
             float length = MeasureWidth(v.Decor("fence"), out bool alongX);
             if (length > 0.1f)
             {
-                const float xMin = -6.2f, xMax = 6.2f, zMin = -9.2f, zMax = 2.2f;
+                const float xMin = -6.2f, xMax = 6.2f, zMin = -7.0f, zMax = 2.2f;
                 float yawX = alongX ? 0 : 90, yawZ = alongX ? 90 : 0;
                 for (float x = xMin + length * 0.5f; x <= xMax; x += length)
                 {
@@ -320,7 +320,7 @@ namespace Game.Editor
                 for (float z = zMin + length * 0.5f; z <= zMax; z += length)
                 {
                     Place(v, "fence", new Vector3(xMin, 0, z), yawZ, root);
-                    if (z < -5.5f || z > -1.5f) Place(v, "fence", new Vector3(xMax, 0, z), yawZ, root); // saída para a loja
+                    if (z < -4.8f || z > -2.2f) Place(v, "fence", new Vector3(xMax, 0, z), yawZ, root); // saída para a loja
                 }
             }
 
@@ -338,7 +338,7 @@ namespace Game.Editor
 
             bool Blocked(float x, float z, float margin)
             {
-                bool farm = x > -7 - margin && x < 9 + margin && z > -10 - margin && z < 10 + margin;
+                bool farm = x > -7 - margin && x < 9 + margin && z > -7.8f - margin && z < 10 + margin;
                 bool store = x > 17.5f - margin && x < 31 + margin && z > -16 - margin && z < 7 + margin;
                 bool path = x > 5 && x < 19 && z > -5 - margin && z < -2 + margin;
                 bool pasture = x > -15.5f && x < -8.5f && z > -9 && z < 0.5f;
@@ -372,8 +372,8 @@ namespace Game.Editor
             string[] flowers = { "flowerR", "flowerY", "flowerP" };
             for (float x = -6.8f; x <= 6.8f; x += 1.1f)
                 Place(v, flowers[rng.Next(3)], new Vector3(x + (float)rng.NextDouble() * 0.3f, 0, 2.9f), (float)(rng.NextDouble() * 360), root);
-            Place(v, "rockL", new Vector3(-8.5f, 0, 3.5f), 40, root);
-            Place(v, "rockL", new Vector3(15.5f, 0, -7.5f), 160, root, 0.8f);
+            Place(v, "rockS1", new Vector3(-8.5f, 0, 3.5f), 40, root, 2.5f);
+            Place(v, "rockS2", new Vector3(15.5f, 0, -7.5f), 160, root, 2.2f);
         }
 
         // ------------------------------------------------------------------ utilidades

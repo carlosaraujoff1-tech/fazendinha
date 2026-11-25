@@ -20,7 +20,7 @@ namespace Game.Presentation.UI
         {
             var root = GameRoot.Instance;
             var panel = UiFactory.Panel("PlantMenu", transform, UiFactory.MenuColor);
-            ((RectTransform)panel.transform).Anchor(new Vector2(0.25f, 0.14f), new Vector2(0.75f, 0.88f));
+            ((RectTransform)panel.transform).Anchor(new Vector2(0.2f, 0.14f), new Vector2(0.8f, 0.88f));
             _panel = panel.gameObject;
 
             var title = UiFactory.Label("Title", panel.transform, "Plantar", 56);
@@ -37,7 +37,7 @@ namespace Game.Presentation.UI
             foreach (var crop in root.Catalog.Crops.OrderBy(c => c.UnlockLevel).ThenBy(c => c.GrowSeconds))
             {
                 var c = crop;
-                var button = UiFactory.MakeButton("Crop_" + c.Id, _list, c.Name, () => Plant(c));
+                var button = UiFactory.MakeButton("Crop_" + c.Id, _list, c.Name, () => Plant(c), 36);
                 var le = button.gameObject.AddComponent<LayoutElement>();
                 le.preferredHeight = 88;
                 _buttons.Add((c, button));
@@ -58,7 +58,7 @@ namespace Game.Presentation.UI
             {
                 bool unlocked = FarmRules.IsCropUnlocked(crop, root.State);
                 string text = unlocked
-                    ? $"{crop.Name}  ·  {DisplayFormat.Duration(crop.GrowSeconds * 1000L)}  ·  {crop.SeedCost} moedas  ·  rende {crop.Yield}"
+                    ? $"{crop.Name}   {DisplayFormat.Duration(crop.GrowSeconds * 1000L)}   {crop.SeedCost} moedas   rende {crop.Yield}"
                     : $"{crop.Name}  ·  nível {crop.UnlockLevel}";
                 UiFactory.SetButton(button, text, unlocked && root.State.Wallet.Coins >= crop.SeedCost);
             }
